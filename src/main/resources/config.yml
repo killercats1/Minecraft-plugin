@@ -268,6 +268,7 @@ announcer:
     - 'Trade with other players on the auction house: &f/ah'
     - 'Try your luck in the &6lottery&7: &f/lottery'
     - 'Need cash in your hands? Create a banknote with &f/banknote <amount>'
+    - 'Talk to nearby players with &aproximity voice chat&7! Type &f/audio&7, open the link and allow your microphone.'
 
 staffchat:
   format: '&8[&cStaff&8] &e{player}&8: &f{message}'

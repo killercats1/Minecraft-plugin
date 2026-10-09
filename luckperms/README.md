@@ -1,6 +1,6 @@
 # LuckPerms setup
 
-This sets up a full rank ladder for the server: permissions for **ServerCore**, **EssentialsX**, **WorldEdit** and **Simple Voice Chat**, chat prefixes, weights and promotion tracks.
+This sets up a full rank ladder for the server: permissions for **ServerCore**, **EssentialsX**, **WorldEdit**, **OpenAudioMc** and **Simple Voice Chat**, chat prefixes, weights and promotion tracks.
 
 ## Ranks
 
@@ -31,10 +31,25 @@ All staff ranks and `builder` can join while maintenance mode is on. They hold `
    ServerCore runs every command from [`setup-commands.txt`](setup-commands.txt) one at a time, which takes under a minute, and then makes you owner. Leave out the name to skip the owner step.
    - Some hosting consoles (eagler.host, for example) join pasted lines into one command, so pasting the file doesn't work there. This command avoids that.
    - `lp creategroup default` will say the group already exists. That's expected.
-   - It's safe to run again; existing ranks are just updated.
+   - It's safe to run again; existing ranks are just updated. After updating ServerCore, run `servercore setupranks` (without a name) to add any new permissions.
 3. If you skipped the name, give yourself owner: `lp user <YourName> parent set owner`
 4. Give ranks with `lp user <name> parent set vip`, or use the tracks: `lp promote <name> donor`.
 5. Check the result in the web editor with `lp editor`. You can tweak anything there.
+
+## OpenAudioMc (browser voice chat)
+
+Everyone can use `/audio`, join or leave voice channels with `/channel`, and use `/mutemic` and `/deafen`. None of those need a permission.
+
+| Node | Who has it | What it does |
+|---|---|---|
+| `channels.survival`, `channels.offtopic` | everyone | Join the built-in "survival" and "off-topic" voice channels |
+| `openaudiomc.channel.create` | VIP and up, helper and up | Create your own private voice channel (`/channel create <name>`) |
+| `channels.staffchat` | helper and up | Join the built-in "staff-chat" voice channel |
+| `openaudiomc.channel.force-join` | moderator and up | Join any voice channel without an invite |
+| `openaudiomc.*`, `channels.adminchat` | admin and up | All OpenAudioMc admin commands, the "admin-chat" voice channel |
+| `voicechat.join` | everyone | Only checked if you turn on `enable-voicechat-permission` in OpenAudioMc's config. Remove it from someone to stop them using voice. |
+
+The `channels.*` names come from the four example channels in OpenAudioMc's default `config.yml` (`static-channels`). If you rename or add channels there, change the permissions to match.
 
 ## Simple Voice Chat
 
