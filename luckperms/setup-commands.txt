@@ -51,6 +51,9 @@ lp group default permission set essentials.depth true
 lp group default permission set essentials.suicide true
 lp group default permission set essentials.me true
 lp group default permission set essentials.whois true
+lp group default permission set voicechat.listen true
+lp group default permission set voicechat.speak true
+lp group default permission set voicechat.groups false
 lp group vip setweight 10
 lp group vip setdisplayname VIP
 lp group vip meta setprefix 10 "&a[VIP] &a"
@@ -64,6 +67,7 @@ lp group vip permission set essentials.kits.vip true
 lp group vip permission set essentials.hat true
 lp group vip permission set essentials.workbench true
 lp group vip permission set essentials.chat.color true
+lp group vip permission set voicechat.groups true
 lp group mvp setweight 20
 lp group mvp setdisplayname MVP
 lp group mvp meta setprefix 20 "&b[MVP] &b"
@@ -125,6 +129,7 @@ lp group helper permission set essentials.mute.offline true
 lp group helper permission set essentials.seen.extra true
 lp group helper permission set essentials.msg.color true
 lp group helper permission set essentials.sethome.multiple.staff true
+lp group helper permission set voicechat.groups true
 lp group moderator setweight 60
 lp group moderator setdisplayname Moderator
 lp group moderator meta setprefix 60 "&9[Mod] &f"
@@ -192,6 +197,7 @@ lp group admin permission set essentials.repair.all true
 lp group admin permission set worldedit.* true
 lp group admin permission set luckperms.user.info true
 lp group admin permission set luckperms.user.parent.* true
+lp group admin permission set voicechat.admin true
 lp group developer setweight 90
 lp group developer setdisplayname Developer
 lp group developer meta setprefix 90 "&3[Dev] &f"

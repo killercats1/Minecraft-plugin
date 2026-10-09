@@ -11,6 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,8 +148,7 @@ public final class BountyManager implements Listener {
             plugin.messages().send(killer, "bounty.contributor-claim");
             return;
         }
-        if (plugin.getConfig().getBoolean("bounty.block-same-ip", true) && killer.getAddress() != null && victim.getAddress() != null
-                && killer.getAddress().getAddress().equals(victim.getAddress().getAddress())) {
+        if (plugin.getConfig().getBoolean("bounty.block-same-ip", true) && sameRealIp(killer, victim)) {
             plugin.messages().send(killer, "bounty.same-ip");
             return;
         }
@@ -161,6 +161,24 @@ public final class BountyManager implements Listener {
         plugin.transactions().log(TransactionType.BOUNTY_CLAIM, killer.getUniqueId(), victim.getUniqueId(), total, "Killed " + victim.getName());
         broadcast("bounty.claimed-broadcast", "killer", killer.getName(), "target", victim.getName(), "amount", Money.format(total));
         Sounds.play(killer, plugin.getConfig().getString("sounds.success", "LEVEL_UP"));
+    }
+
+    /**
+     * Whether both players connect from the same public IP. Local/private addresses are ignored:
+     * behind a proxy without IP forwarding (common for Eaglercraft WebSocket gateways) every player
+     * shares the proxy's address, and treating that as one person would block every bounty.
+     */
+    private static boolean sameRealIp(Player a, Player b) {
+        if (a.getAddress() == null || b.getAddress() == null) {
+            return false;
+        }
+        InetAddress first = a.getAddress().getAddress();
+        InetAddress second = b.getAddress().getAddress();
+        if (first == null || second == null || first.isLoopbackAddress() || first.isSiteLocalAddress()
+                || first.isLinkLocalAddress() || first.isAnyLocalAddress()) {
+            return false;
+        }
+        return first.equals(second);
     }
 
     private void broadcast(String key, Object... placeholders) {

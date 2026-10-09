@@ -197,7 +197,8 @@ bounty:
   cooldown-seconds: 60
   # Contributors can't collect a bounty they helped fund.
   block-contributor-claim: true
-  # Killer and victim on the same IP can't collect (alt farming).
+  # Killer and victim on the same public IP can't collect (alt farming).
+  # Local/proxy addresses are ignored, so this is safe behind Eaglercraft/BungeeCord proxies.
   block-same-ip: true
 
 lottery:

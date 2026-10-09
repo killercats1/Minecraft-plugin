@@ -17,6 +17,14 @@ An all-in-one core plugin for **Spigot / Paper 1.8.8** servers:
 
 Without Vault/EssentialsX the economy commands are disabled, but maintenance mode, the scoreboard, the announcer and staff chat still work.
 
+## Hosting on Eaglercraft (e.g. eagler.host)
+
+The plugin targets 1.8.8, so it works with EaglercraftX 1.8 browser players. A few things to know:
+
+- **Accounts:** Eaglercraft servers run in offline (cracked) mode, so anyone can join with any username, including a staff member's. Use a login plugin (EaglerXServer's built-in auth, or AuthMe) so nobody can impersonate an op, a staff rank or a maintenance-whitelisted name.
+- **IP forwarding:** If players connect through an EaglerX/BungeeCord proxy, turn on IP forwarding (`ip_forward: true` on the proxy, `bungeecord: true` in `spigot.yml`) so bans and the bounty same-IP check see real IPs. ServerCore ignores local/proxy addresses, so bounties still work without it.
+- **Voice chat:** Browser players can't install mods, so Simple Voice Chat only works for Java players using its mod. EaglercraftX has its own built-in voice chat for browser players; it's enabled in the EaglerX server/proxy config or your host's panel.
+
 ## Building
 
 ```bash
