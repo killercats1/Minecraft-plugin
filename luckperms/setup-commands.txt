@@ -136,6 +136,7 @@ lp group helper permission set essentials.sethome.multiple.staff true
 lp group helper permission set voicechat.groups true
 lp group helper permission set openaudiomc.channel.create true
 lp group helper permission set channels.staffchat true
+lp group helper permission set servercore.chatguard.notify true
 lp group moderator setweight 60
 lp group moderator setdisplayname Moderator
 lp group moderator meta setprefix 60 "&9[Mod] &f"
@@ -166,6 +167,7 @@ lp group moderator permission set essentials.seen.ip true
 lp group moderator permission set essentials.whois true
 lp group moderator permission set essentials.chat.color true
 lp group moderator permission set openaudiomc.channel.force-join true
+lp group moderator permission set servercore.chatguard.bypass true
 lp group admin setweight 80
 lp group admin setdisplayname Admin
 lp group admin meta setprefix 80 "&c[Admin] &f"
@@ -207,6 +209,7 @@ lp group admin permission set luckperms.user.parent.* true
 lp group admin permission set voicechat.admin true
 lp group admin permission set openaudiomc.* true
 lp group admin permission set channels.adminchat true
+lp group admin permission set servercore.backup true
 lp group developer setweight 90
 lp group developer setdisplayname Developer
 lp group developer meta setprefix 90 "&3[Dev] &f"

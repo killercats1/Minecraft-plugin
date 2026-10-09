@@ -80,6 +80,9 @@ permissions:
       servercore.auction.admin: true
       servercore.pay.bypasscooldown: true
       servercore.pay.bypasstoggle: true
+      servercore.backup: true
+      servercore.chatguard.bypass: true
+      servercore.chatguard.notify: true
   servercore.player:
     description: All normal player features.
     default: true
@@ -109,6 +112,15 @@ permissions:
       servercore.announcer.receive: true
   servercore.admin:
     description: Reload the plugin.
+    default: op
+  servercore.backup:
+    description: Run /servercore backup and see backup messages.
+    default: op
+  servercore.chatguard.bypass:
+    description: Not affected by the chat cooldown, advertising and word filters.
+    default: op
+  servercore.chatguard.notify:
+    description: See blocked advertising attempts.
     default: op
   servercore.maintenance:
     description: Use /maintenance.

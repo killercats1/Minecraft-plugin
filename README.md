@@ -98,6 +98,30 @@ Players who link their Discord account with DiscordSRV (`/discord link`) get a o
 
 Each Minecraft account **and** each Discord account can only get the reward once, so unlinking and relinking, or linking alts to the same Discord, gives nothing. The reward shows up in `/transactions`.
 
+## Backups
+
+ServerCore zips the worlds, important plugin folders (ServerCore, LuckPerms, Essentials, DiscordSRV, LoginSecurity, Jobs, ...) and the server's ops/whitelist/ban lists every 12 hours. They go into the `backups/` folder in the main server directory, and only the newest 2 are kept.
+
+- `/servercore backup` makes one now; `/servercore backup list` lists them.
+- While a backup runs, world saving is paused and the zip is written in the background, so the copy is consistent and the server keeps running.
+- It checks free disk space first and never fills the disk.
+- **The backups are on the same disk as the server.** Download the newest zip from your host's file manager every now and then, so a host problem can't take your backups with it.
+- To restore, stop the server and replace the world/plugin folders with the ones from the zip.
+
+Settings are under `backups` in `config.yml`.
+
+## Chat protection
+
+- **Cooldown:** 1.5 seconds between messages.
+- **Repeats:** the same message twice within 30 seconds is blocked.
+- **Advertising:** IP addresses and server/website addresses are blocked, including tricks like `name . com` or `name(dot)host`. `lilmonkeysmp.eagler.host` is allowed. Staff with `servercore.chatguard.notify` see who tried.
+- **CAPS:** messages that are mostly capital letters are turned into lowercase.
+- **Word filter:** add words to `chat-guard.blocked-words` and they're replaced with `***`.
+- Private messages (`/msg`, `/r`, `/mail`, ...) are checked for advertising and blocked words too.
+- Staff with `servercore.chatguard.bypass` aren't affected.
+
+Settings are under `chat-guard` in `config.yml`.
+
 ## Other features
 
 - **Scoreboard**: flicker-free sidebar with `{rank}`, `{balance}`, `{bank}`, `{bounty}`, `{lottery}`, `{streak}`, `{online}` and PlaceholderAPI. `/scoreboard` toggles it per player.

@@ -33,6 +33,7 @@ public final class Database {
     private String url;
     private String user;
     private String password;
+    private File sqliteFile;
     private Connection connection;
 
     public Database(JavaPlugin plugin) {
@@ -55,8 +56,8 @@ public final class Database {
             password = section.getString("mysql.password", "");
         } else {
             Class.forName("org.sqlite.JDBC");
-            File file = new File(plugin.getDataFolder(), section == null ? "data.db" : section.getString("sqlite-file", "data.db"));
-            url = "jdbc:sqlite:" + file.getAbsolutePath();
+            sqliteFile = new File(plugin.getDataFolder(), section == null ? "data.db" : section.getString("sqlite-file", "data.db"));
+            url = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
         }
         // Open the connection and create tables on the database thread, but wait for it.
         submit(() -> {
@@ -217,6 +218,29 @@ public final class Database {
             update.append(columns[i]).append("=VALUES(").append(columns[i]).append(')');
         }
         return "INSERT INTO " + table + " (" + cols + ") VALUES (" + marks + ") ON DUPLICATE KEY UPDATE " + update;
+    }
+
+    /** Name of the SQLite file (empty for MySQL). */
+    public String fileName() {
+        return sqliteFile == null ? "" : sqliteFile.getName();
+    }
+
+    /**
+     * Copies the SQLite file on the database thread, so no statement runs during the copy.
+     * Completes with false for MySQL (back that up with mysqldump instead).
+     */
+    public CompletableFuture<Boolean> snapshot(File target) {
+        if (mysql || sqliteFile == null) {
+            return CompletableFuture.completedFuture(false);
+        }
+        return submit(() -> {
+            try {
+                java.nio.file.Files.copy(sqliteFile.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                return true;
+            } catch (java.io.IOException e) {
+                throw new SQLException("Could not copy database", e);
+            }
+        });
     }
 
     /** Waits for every queued statement, then closes the connection. */

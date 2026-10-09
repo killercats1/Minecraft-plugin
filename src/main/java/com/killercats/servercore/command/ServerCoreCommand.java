@@ -33,6 +33,19 @@ public final class ServerCoreCommand extends BaseCommand {
             rankSetup.run(sender, args.length > 1 ? args[1] : null);
             return;
         }
+        if (args.length > 0 && args[0].equalsIgnoreCase("backup")) {
+            requirePermission(sender, "servercore.backup");
+            if (args.length > 1 && args[1].equalsIgnoreCase("list")) {
+                List<String> backups = plugin.backups().list();
+                msg(sender, "backup.list", "count", backups.size());
+                for (String line : backups) {
+                    sender.sendMessage(" - " + line);
+                }
+                return;
+            }
+            plugin.backups().start(sender);
+            return;
+        }
         if (args.length > 0 && args[0].equalsIgnoreCase("linkreward")) {
             // Run by DiscordSRV as console when an account is linked. Console only so players can't call it.
             if (!(sender instanceof ConsoleCommandSender)) {
@@ -55,7 +68,7 @@ public final class ServerCoreCommand extends BaseCommand {
 
     @Override
     protected List<String> complete(CommandSender sender, String[] args) {
-        return args.length == 1 ? list("help", "reload", "version", "setupranks") : list();
+        return args.length == 1 ? list("help", "reload", "version", "backup", "setupranks") : list();
     }
 
     /** /scoreboard - toggles the sidebar. */

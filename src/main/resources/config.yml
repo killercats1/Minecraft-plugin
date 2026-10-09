@@ -282,6 +282,40 @@ announcer:
     - 'Need cash in your hands? Create a banknote with &f/banknote <amount>'
     - 'Talk to nearby players with &aproximity voice chat&7! Type &f/audio&7, open the link and allow your microphone.'
 
+# Chat protection: cooldown, repeated messages, advertising, CAPS and a word filter.
+# Bypass: servercore.chatguard.bypass   Staff alerts: servercore.chatguard.notify
+chat-guard:
+  enabled: true
+  # Minimum time between two chat messages from the same player.
+  cooldown-millis: 1500
+  # Block sending the same message again within this many seconds.
+  block-repeats: true
+  repeat-window-seconds: 30
+  # Block IP addresses and website/server addresses (e.g. other Eaglercraft servers).
+  block-advertising: true
+  # Addresses that are always allowed.
+  allowed-links:
+    - lilmonkeysmp.eagler.host
+  # Messages with more than this percentage of capital letters are lowercased (0 = off).
+  caps-limit-percent: 60
+  caps-min-length: 6
+  # Words replaced with *** (whole words, any case). Add your own.
+  blocked-words: []
+  # Private-message commands that are also checked for advertising and blocked words.
+  check-commands: [msg, tell, w, whisper, m, t, pm, r, reply, mail, me]
+
+# Automatic backups of the worlds, plugin data and player lists (zip files).
+# They are stored on the same disk as the server: download them now and then from the file manager!
+backups:
+  enabled: true
+  interval-hours: 12
+  # How many backup zips to keep; older ones are deleted (free hosts have little disk space).
+  keep: 2
+  # Folder in the main server directory.
+  folder: backups
+  # Plugin folders to include (jar files are always skipped).
+  include-plugins: [ServerCore, LuckPerms, Essentials, DiscordSRV, LoginSecurity, Jobs, DecentHolograms, VillagerMarket, MineResetLite]
+
 staffchat:
   format: '&8[&cStaff&8] &e{player}&8: &f{message}'
 
