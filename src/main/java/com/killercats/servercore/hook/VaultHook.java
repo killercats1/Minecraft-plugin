@@ -1,5 +1,6 @@
 package com.killercats.servercore.hook;
 
+import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
@@ -10,6 +11,7 @@ public final class VaultHook {
 
     private Economy economy;
     private Permission permission;
+    private volatile Chat chat;
 
     public boolean isVaultPresent() {
         return Bukkit.getPluginManager().getPlugin("Vault") != null;
@@ -31,6 +33,37 @@ public final class VaultHook {
         RegisteredServiceProvider<Permission> rsp = Bukkit.getServicesManager().getRegistration(Permission.class);
         permission = rsp == null ? null : rsp.getProvider();
         return permission != null;
+    }
+
+    /** Vault chat provider (LuckPerms registers one), looked up lazily because it may register late. */
+    private Chat chat() {
+        Chat current = chat;
+        if (current == null && isVaultPresent()) {
+            RegisteredServiceProvider<Chat> rsp = Bukkit.getServicesManager().getRegistration(Chat.class);
+            current = rsp == null ? null : rsp.getProvider();
+            chat = current;
+        }
+        return current;
+    }
+
+    public String prefix(Player player) {
+        try {
+            Chat provider = chat();
+            String value = provider == null ? null : provider.getPlayerPrefix(player);
+            return value == null ? "" : value;
+        } catch (Throwable t) {
+            return "";
+        }
+    }
+
+    public String suffix(Player player) {
+        try {
+            Chat provider = chat();
+            String value = provider == null ? null : provider.getPlayerSuffix(player);
+            return value == null ? "" : value;
+        } catch (Throwable t) {
+            return "";
+        }
     }
 
     public Economy economy() {

@@ -30,6 +30,7 @@ import com.killercats.servercore.economy.sell.SellManager;
 import com.killercats.servercore.features.ActivityTracker;
 import com.killercats.servercore.features.Announcer;
 import com.killercats.servercore.features.BackupManager;
+import com.killercats.servercore.features.ChatFormatter;
 import com.killercats.servercore.features.ChatGuard;
 import com.killercats.servercore.features.ScoreboardManager;
 import com.killercats.servercore.features.StaffChat;
@@ -116,7 +117,7 @@ public final class ServerCore extends JavaPlugin {
         StaffChat staffChat = new StaffChat(this);
         chatGuard = new ChatGuard(this);
         backups = new BackupManager(this);
-        register(staffChat, chatGuard);
+        register(staffChat, chatGuard, new ChatFormatter(this));
         command("servercore", new ServerCoreCommand(this));
         command("maintenance", new MaintenanceCommand(this));
         command("staffchat", staffChat);

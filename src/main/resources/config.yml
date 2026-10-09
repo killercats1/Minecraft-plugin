@@ -282,6 +282,20 @@ announcer:
     - 'Need cash in your hands? Create a banknote with &f/banknote <amount>'
     - 'Talk to nearby players with &aproximity voice chat&7! Type &f/audio&7, open the link and allow your microphone.'
 
+# Chat format with rank prefixes from LuckPerms, e.g. "[Owner] Killercats2154: hi".
+# Placeholders: {prefix} {suffix} {displayname} {name} {group} {world} {message} + PlaceholderAPI %placeholders%
+# Not used while EssentialsX Chat is installed (remove EssentialsXChat to use this).
+chat-format:
+  enabled: true
+  format: '{prefix}{displayname}{suffix}&7: {message}'
+  # Color of the message text.
+  message-color: '&f'
+  # Optional format per rank (LuckPerms primary group), overrides 'format'. Example:
+  #   owner: '{prefix}{displayname}&7: &c{message}'
+  group-formats: {}
+  # Players with this permission can use & color codes in chat (VIP and staff in the rank setup).
+  color-permission: essentials.chat.color
+
 # Chat protection: cooldown, repeated messages, advertising, CAPS and a word filter.
 # Bypass: servercore.chatguard.bypass   Staff alerts: servercore.chatguard.notify
 chat-guard:

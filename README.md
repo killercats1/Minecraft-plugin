@@ -110,6 +110,15 @@ ServerCore zips the worlds, important plugin folders (ServerCore, LuckPerms, Ess
 
 Settings are under `backups` in `config.yml`.
 
+## Chat prefixes
+
+ServerCore formats chat with each player's LuckPerms rank prefix, for example `[Owner] Killercats2154: hi`. It reads the prefix through Vault, so LuckPerms and Vault must be installed.
+
+- Change the look under `chat-format` in `config.yml`, and use `/servercore reload` to apply it. Placeholders: `{prefix}`, `{suffix}`, `{displayname}`, `{name}`, `{group}`, `{world}`, `{message}` and PlaceholderAPI placeholders.
+- `group-formats` can give a rank its own chat format.
+- Players with `essentials.chat.color` (VIP and staff in the rank setup) can use `&` color codes in their messages.
+- **Don't install EssentialsX Chat at the same time.** If it's installed, ServerCore leaves chat alone and logs a warning.
+
 ## Chat protection
 
 - **Cooldown:** 1.5 seconds between messages.
