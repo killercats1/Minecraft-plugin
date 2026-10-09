@@ -1,0 +1,216 @@
+lp creategroup default
+lp creategroup vip
+lp creategroup mvp
+lp creategroup elite
+lp creategroup builder
+lp creategroup helper
+lp creategroup moderator
+lp creategroup admin
+lp creategroup developer
+lp creategroup owner
+lp group default setweight 1
+lp group default setdisplayname Member
+lp group default meta setprefix 1 "&7"
+lp group default permission set servercore.player true
+lp group default permission set essentials.spawn true
+lp group default permission set essentials.home true
+lp group default permission set essentials.sethome true
+lp group default permission set essentials.delhome true
+lp group default permission set essentials.sethome.multiple true
+lp group default permission set essentials.sethome.multiple.default true
+lp group default permission set essentials.tpa true
+lp group default permission set essentials.tpahere true
+lp group default permission set essentials.tpaccept true
+lp group default permission set essentials.tpdeny true
+lp group default permission set essentials.tpacancel true
+lp group default permission set essentials.back true
+lp group default permission set essentials.back.ondeath true
+lp group default permission set essentials.msg true
+lp group default permission set essentials.reply true
+lp group default permission set essentials.ignore true
+lp group default permission set essentials.mail true
+lp group default permission set essentials.mail.send true
+lp group default permission set essentials.balance true
+lp group default permission set essentials.balancetop true
+lp group default permission set essentials.pay true
+lp group default permission set essentials.warp true
+lp group default permission set essentials.warp.list true
+lp group default permission set essentials.warps.* true
+lp group default permission set essentials.kit true
+lp group default permission set essentials.kits.starter true
+lp group default permission set essentials.afk true
+lp group default permission set essentials.motd true
+lp group default permission set essentials.rules true
+lp group default permission set essentials.list true
+lp group default permission set essentials.help true
+lp group default permission set essentials.helpop true
+lp group default permission set essentials.seen true
+lp group default permission set essentials.compass true
+lp group default permission set essentials.getpos true
+lp group default permission set essentials.depth true
+lp group default permission set essentials.suicide true
+lp group default permission set essentials.me true
+lp group default permission set essentials.whois true
+lp group vip setweight 10
+lp group vip setdisplayname VIP
+lp group vip meta setprefix 10 "&a[VIP] &a"
+lp group vip parent add default
+lp group vip permission set servercore.sell.multiplier.vip true
+lp group vip permission set servercore.daily.rank.vip true
+lp group vip permission set servercore.payday.rank.vip true
+lp group vip permission set servercore.auction.limit.10 true
+lp group vip permission set essentials.sethome.multiple.vip true
+lp group vip permission set essentials.kits.vip true
+lp group vip permission set essentials.hat true
+lp group vip permission set essentials.workbench true
+lp group vip permission set essentials.chat.color true
+lp group mvp setweight 20
+lp group mvp setdisplayname MVP
+lp group mvp meta setprefix 20 "&b[MVP] &b"
+lp group mvp parent add vip
+lp group mvp permission set servercore.sell.multiplier.mvp true
+lp group mvp permission set servercore.daily.rank.mvp true
+lp group mvp permission set servercore.payday.rank.mvp true
+lp group mvp permission set servercore.auction.limit.15 true
+lp group mvp permission set essentials.sethome.multiple.mvp true
+lp group mvp permission set essentials.kits.mvp true
+lp group mvp permission set essentials.enderchest true
+lp group mvp permission set essentials.feed true
+lp group mvp permission set essentials.nick true
+lp group mvp permission set essentials.chat.format true
+lp group elite setweight 30
+lp group elite setdisplayname Elite
+lp group elite meta setprefix 30 "&5[Elite] &d"
+lp group elite parent add mvp
+lp group elite permission set servercore.sell.multiplier.elite true
+lp group elite permission set servercore.daily.rank.elite true
+lp group elite permission set servercore.payday.rank.elite true
+lp group elite permission set servercore.auction.limit.25 true
+lp group elite permission set servercore.bank.tier.elite true
+lp group elite permission set servercore.auction.nofee true
+lp group elite permission set essentials.sethome.multiple.elite true
+lp group elite permission set essentials.kits.elite true
+lp group elite permission set essentials.heal true
+lp group elite permission set essentials.fly true
+lp group builder setweight 40
+lp group builder setdisplayname Builder
+lp group builder meta setprefix 40 "&2[Builder] &f"
+lp group builder parent add default
+lp group builder permission set servercore.maintenance.bypass true
+lp group builder permission set essentials.gamemode true
+lp group builder permission set essentials.gamemode.creative true
+lp group builder permission set essentials.gamemode.survival true
+lp group builder permission set essentials.gamemode.spectator true
+lp group builder permission set essentials.fly true
+lp group builder permission set essentials.speed true
+lp group builder permission set essentials.speed.fly true
+lp group builder permission set essentials.time true
+lp group builder permission set essentials.weather true
+lp group builder permission set essentials.tp true
+lp group builder permission set essentials.tppos true
+lp group builder permission set essentials.top true
+lp group builder permission set worldedit.* true
+lp group helper setweight 50
+lp group helper setdisplayname Helper
+lp group helper meta setprefix 50 "&e[Helper] &f"
+lp group helper parent add default
+lp group helper permission set servercore.maintenance.bypass true
+lp group helper permission set servercore.maintenance.notify true
+lp group helper permission set servercore.staffchat true
+lp group helper permission set servercore.payday.rank.staff true
+lp group helper permission set essentials.helpop.receive true
+lp group helper permission set essentials.kick true
+lp group helper permission set essentials.mute true
+lp group helper permission set essentials.mute.offline true
+lp group helper permission set essentials.seen.extra true
+lp group helper permission set essentials.msg.color true
+lp group helper permission set essentials.sethome.multiple.staff true
+lp group moderator setweight 60
+lp group moderator setdisplayname Moderator
+lp group moderator meta setprefix 60 "&9[Mod] &f"
+lp group moderator parent add helper
+lp group moderator permission set servercore.transactions.others true
+lp group moderator permission set servercore.banknote.alerts true
+lp group moderator permission set servercore.banknote.lookup true
+lp group moderator permission set servercore.auction.admin true
+lp group moderator permission set essentials.kick.notify true
+lp group moderator permission set essentials.mute.notify true
+lp group moderator permission set essentials.ban.notify true
+lp group moderator permission set essentials.tempban true
+lp group moderator permission set essentials.tempban.offline true
+lp group moderator permission set essentials.unban true
+lp group moderator permission set essentials.jail true
+lp group moderator permission set essentials.togglejail true
+lp group moderator permission set essentials.jails true
+lp group moderator permission set essentials.vanish true
+lp group moderator permission set essentials.socialspy true
+lp group moderator permission set essentials.invsee true
+lp group moderator permission set essentials.enderchest.others true
+lp group moderator permission set essentials.tp true
+lp group moderator permission set essentials.tphere true
+lp group moderator permission set essentials.tpo true
+lp group moderator permission set essentials.fly true
+lp group moderator permission set essentials.clearinventory true
+lp group moderator permission set essentials.seen.ip true
+lp group moderator permission set essentials.whois true
+lp group moderator permission set essentials.chat.color true
+lp group admin setweight 80
+lp group admin setdisplayname Admin
+lp group admin meta setprefix 80 "&c[Admin] &f"
+lp group admin parent add moderator
+lp group admin permission set servercore.admin true
+lp group admin permission set servercore.maintenance true
+lp group admin permission set servercore.ecoadmin true
+lp group admin permission set servercore.ecostats true
+lp group admin permission set servercore.bounty.admin true
+lp group admin permission set servercore.lottery.admin true
+lp group admin permission set servercore.pay.bypasscooldown true
+lp group admin permission set servercore.pay.bypasstoggle true
+lp group admin permission set essentials.ban true
+lp group admin permission set essentials.ban.offline true
+lp group admin permission set essentials.banip true
+lp group admin permission set essentials.unbanip true
+lp group admin permission set essentials.gamemode true
+lp group admin permission set essentials.gamemode.* true
+lp group admin permission set essentials.give true
+lp group admin permission set essentials.item true
+lp group admin permission set essentials.eco true
+lp group admin permission set essentials.broadcast true
+lp group admin permission set essentials.sudo true
+lp group admin permission set essentials.setwarp true
+lp group admin permission set essentials.delwarp true
+lp group admin permission set essentials.setspawn true
+lp group admin permission set essentials.time true
+lp group admin permission set essentials.weather true
+lp group admin permission set essentials.heal true
+lp group admin permission set essentials.feed true
+lp group admin permission set essentials.speed true
+lp group admin permission set essentials.nick.others true
+lp group admin permission set essentials.kits.* true
+lp group admin permission set essentials.repair true
+lp group admin permission set essentials.repair.all true
+lp group admin permission set worldedit.* true
+lp group admin permission set luckperms.user.info true
+lp group admin permission set luckperms.user.parent.* true
+lp group developer setweight 90
+lp group developer setdisplayname Developer
+lp group developer meta setprefix 90 "&3[Dev] &f"
+lp group developer parent add admin
+lp group developer permission set luckperms.* true
+lp group owner setweight 100
+lp group owner setdisplayname Owner
+lp group owner meta setprefix 100 "&4[Owner] &c"
+lp group owner parent add developer
+lp group owner permission set * true
+lp createtrack donor
+lp track donor append default
+lp track donor append vip
+lp track donor append mvp
+lp track donor append elite
+lp createtrack staff
+lp track staff append default
+lp track staff append helper
+lp track staff append moderator
+lp track staff append admin
+lp track staff append developer
+lp track staff append owner

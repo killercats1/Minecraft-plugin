@@ -31,6 +31,7 @@ maintenance:
     - owner
     - admin
     - moderator
+    - helper
     - developer
     - builder
   # Seconds between enabling maintenance and kicking players who may not stay.

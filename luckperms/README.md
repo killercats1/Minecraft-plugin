@@ -1,0 +1,39 @@
+# LuckPerms setup
+
+This sets up a full rank ladder for the server: permissions for **ServerCore**, **EssentialsX** and **WorldEdit**, chat prefixes, weights and promotion tracks.
+
+## Ranks
+
+| Rank | Weight | Inherits | Prefix | What they get |
+|---|---|---|---|---|
+| `default` | 1 | - | gray name | All ServerCore player features, EssentialsX basics: homes, /tpa, /back, /msg, /mail, warps, the `starter` kit, /bal, /baltop |
+| `vip` | 10 | default | `[VIP]` | x1.1 sell price, x1.25 daily reward, $500 payday, 10 auction listings, `vip` kit, /hat, /workbench, color chat |
+| `mvp` | 20 | vip | `[MVP]` | x1.25 sell price, x1.5 daily reward, $1000 payday, 15 auction listings, `mvp` kit, /enderchest, /feed, /nick |
+| `elite` | 30 | mvp | `[Elite]` | x1.5 sell price, x2 daily reward, $2000 payday, 25 auction listings, **Elite bank tier**, no auction fees, `elite` kit, /heal, /fly |
+| `builder` | 40 | default | `[Builder]` | Joins during maintenance, gamemode, fly, speed, time/weather, teleport, WorldEdit |
+| `helper` | 50 | default | `[Helper]` | Joins during maintenance, staff chat, maintenance join alerts, /helpop alerts, kick, mute, $1500 staff payday |
+| `moderator` | 60 | helper | `[Mod]` | Tempban/unban, jail, vanish, socialspy, invsee, teleport, other players' transactions, banknote dupe alerts and lookup, cancel auction listings |
+| `admin` | 80 | moderator | `[Admin]` | Maintenance control, /ecoadmin, /ecostats, permanent bans, /give, /eco, warps/spawn setup, all kits, `/servercore reload`, WorldEdit |
+| `developer` | 90 | admin | `[Dev]` | Full LuckPerms access |
+| `owner` | 100 | developer | `[Owner]` | Everything (`*`) |
+
+Tracks: `donor` (default > vip > mvp > elite) and `staff` (default > helper > moderator > admin > developer > owner). For example, `lp promote Steve donor` moves Steve one rank up the donor ladder.
+
+All staff ranks and `builder` can join while maintenance mode is on. They hold `servercore.maintenance.bypass`, and their rank names are also in `maintenance.allowed-ranks` in ServerCore's config.
+
+## How to apply it
+
+1. Install **LuckPerms** (the normal Bukkit jar supports 1.8.8) and **Vault**, then restart.
+2. Open the server **console** and paste the contents of [`setup-commands.txt`](setup-commands.txt). There is one command per line with no leading `/`. Most panels (Pterodactyl, Multicraft) run pasted lines one by one. If yours doesn't, paste them in chunks.
+   - `lp creategroup default` will say the group already exists. That's expected.
+3. Give yourself owner: `lp user <YourName> parent set owner`
+4. Give ranks with `lp user <name> parent set vip`, or use the tracks: `lp promote <name> donor`.
+5. Check the result in the web editor with `lp editor`. You can tweak anything there.
+
+## Things to match in other configs
+
+- **EssentialsX `config.yml`**:
+  - Add `mvp` and `elite` under `sethome-multiple`. The default file only has `default`, `vip` and `staff`. Example: `default: 3`, `vip: 5`, `mvp: 8`, `elite: 12`, `staff: 15`.
+  - Create kits named `starter`, `vip`, `mvp` and `elite` (or rename the `essentials.kits.<name>` nodes).
+- **Chat prefixes** need a chat formatter that reads Vault prefixes, such as **EssentialsX Chat** with `{PREFIX}{DISPLAYNAME}` in its format. The prefix also shows in the ServerCore scoreboard through `{rank}`.
+- **ServerCore `config.yml`**: the multipliers, salaries and listing limits above come from `sell.multipliers`, `daily.rank-multipliers`, `payday.ranks` and `auction.limit-permissions`. Change the numbers there and the rank permissions keep working.
