@@ -1,0 +1,279 @@
+# =====================================================================
+#  ServerCore for LilMonkeySMP (lilmonkeysmp.eagler.host)
+#  Maintenance mode, advanced economy & server essentials
+#  Built for Spigot/Paper 1.8.8. Economy runs on Vault + EssentialsX.
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# Storage: sqlite (default, zero setup) or mysql (for networks).
+# ---------------------------------------------------------------------
+storage:
+  type: sqlite
+  sqlite-file: data.db
+  autosave-minutes: 5
+  mysql:
+    host: localhost
+    port: 3306
+    database: minecraft
+    username: root
+    password: ''
+    use-ssl: false
+
+# ---------------------------------------------------------------------
+# Maintenance mode
+# ---------------------------------------------------------------------
+maintenance:
+  # Operators can always join while maintenance is on.
+  # Ranks (permission groups, read through Vault - LuckPerms, PermissionsEx,
+  # GroupManager, ...) that may join during maintenance. Case-insensitive.
+  # Alternatively give a rank the permission servercore.maintenance.rank.<name>
+  # or servercore.maintenance.bypass.
+  allowed-ranks:
+    - owner
+    - admin
+    - moderator
+    - helper
+    - developer
+    - builder
+  # Seconds between enabling maintenance and kicking players who may not stay.
+  kick-delay-seconds: 5
+  default-reason: 'Scheduled maintenance'
+  # Seconds before a scheduled maintenance at which a countdown is broadcast.
+  countdown-broadcasts: [900, 600, 300, 120, 60, 30, 15, 10, 5, 4, 3, 2, 1]
+  # Tell staff (servercore.maintenance.notify) when someone is blocked.
+  notify-staff-on-attempt: true
+  # Server list MOTD while maintenance is on. {reason} {remaining}
+  motd:
+    enabled: true
+    line1: '&6&lLilMonkeySMP &8- &c&lMAINTENANCE'
+    line2: '&7{reason} &8| &eBack in: &f{remaining}'
+  # Max players shown in the server list during maintenance (-1 = unchanged).
+  max-players-display: 0
+
+# ---------------------------------------------------------------------
+# Economy (wallet balances are stored by EssentialsX through Vault,
+# so /bal, /baltop and /eco keep working as usual)
+# ---------------------------------------------------------------------
+economy:
+  currency-symbol: '$'
+  symbol-after-amount: false
+  number-format: '#,##0.00'
+  # Hard cap for a single typed amount (protects against typos like 1e20).
+  max-transaction: 1000000000000
+  transaction-log:
+    enabled: true
+    # Also record balance changes made by EssentialsX commands.
+    log-essentials: true
+    # EssentialsX UserBalanceUpdateEvent causes to record.
+    essentials-causes: [COMMAND_ECO, COMMAND_PAY, COMMAND_SELL]
+
+# Passive income (bank interest, payday) is not paid to AFK players.
+# EssentialsX AFK status is used when available, plus this inactivity timer.
+afk:
+  inactivity-timeout-seconds: 300
+
+pay:
+  # true: /pay is handled by ServerCore (EssentialsX automatically defers to it).
+  # false: /pay is passed through to EssentialsX.
+  override-essentials: true
+  min-amount: 1
+  # Percentage removed from every payment (money sink). Bypass: servercore.pay.notax
+  tax-percent: 0.0
+  cooldown-seconds: 3
+  # Payments at or above this amount need /pay confirm (0 = never).
+  confirm-above: 100000
+  # Allow paying players who are offline (they must have joined before).
+  allow-offline: true
+
+bank:
+  withdraw-fee-percent: 0.0
+  transfer-fee-percent: 1.0
+  interest:
+    enabled: true
+    interval-minutes: 30
+    # AFK players don't earn interest.
+    require-active: true
+    # Max interest per player per payout (0 = unlimited).
+    max-payout: 50000
+    min-balance: 100
+  # Tier 1 is the default. Optional 'permission' locks a tier to a rank.
+  tiers:
+    - name: '&7Basic'
+      cost: 0
+      max-balance: 100000
+      interest-percent: 0.25
+    - name: '&fSilver'
+      cost: 25000
+      max-balance: 500000
+      interest-percent: 0.5
+    - name: '&6Gold'
+      cost: 150000
+      max-balance: 2500000
+      interest-percent: 0.75
+    - name: '&bDiamond'
+      cost: 750000
+      max-balance: 10000000
+      interest-percent: 1.0
+    - name: '&5&lElite'
+      cost: 3000000
+      max-balance: 50000000
+      interest-percent: 1.25
+      permission: servercore.bank.tier.elite
+
+banknotes:
+  material: PAPER
+  name: '&a&lBanknote &7({amount})'
+  lore:
+    - '&7Value: &a{amount}'
+    - '&7Signed by: &f{creator}'
+    - '&7Issued: &f{date}'
+    - ''
+    - '&eRight-click to redeem'
+  min-amount: 10
+  max-amount: 10000000
+  max-per-command: 16
+  fee-percent: 0.0
+
+sell:
+  # Items with custom names or lore can't be sold (protects special items).
+  allow-custom-items: false
+  # Closing the /sell menu without pressing a button: true = sell, false = return items.
+  gui-sell-on-close: false
+  dynamic-pricing:
+    enabled: true
+    # Server-wide units that must be sold before an item's price halves.
+    units-until-half-price: 2000
+    # Price never drops below this fraction of the base price.
+    min-multiplier: 0.25
+    # How fast the market recovers (percent of the sold counter removed every minute).
+    recovery-percent-per-minute: 2.0
+  # Rank sell boosts. Players get the highest multiplier they have permission for.
+  multipliers:
+    vip:
+      permission: servercore.sell.multiplier.vip
+      multiplier: 1.1
+    mvp:
+      permission: servercore.sell.multiplier.mvp
+      multiplier: 1.25
+    elite:
+      permission: servercore.sell.multiplier.elite
+      multiplier: 1.5
+
+daily:
+  cooldown-hours: 24
+  # Missing a day for longer than this resets the streak.
+  streak-reset-hours: 48
+  base-reward: 500
+  streak-bonus-per-day: 100
+  max-streak: 30
+  remind-on-join: true
+  # servercore.daily.rank.<name> -> reward multiplier
+  rank-multipliers:
+    vip: 1.25
+    mvp: 1.5
+    elite: 2.0
+  # Extra reward on exact streak days.
+  milestones:
+    7: 5000
+    14: 12500
+    30: 50000
+    100: 250000
+
+payday:
+  enabled: true
+  # Minutes of active (non-AFK) play per payday.
+  interval-minutes: 60
+  # servercore.payday.rank.<name> -> salary. Highest one applies.
+  ranks:
+    default: 250
+    vip: 500
+    mvp: 1000
+    elite: 2000
+    staff: 1500
+
+bounty:
+  min-amount: 1000
+  # Percentage removed when placing a bounty (money sink).
+  tax-percent: 10
+  cooldown-seconds: 60
+  # Contributors can't collect a bounty they helped fund.
+  block-contributor-claim: true
+  # Killer and victim on the same public IP can't collect (alt farming).
+  # Local/proxy addresses are ignored, so this is safe behind Eaglercraft/BungeeCord proxies.
+  block-same-ip: true
+
+lottery:
+  enabled: true
+  ticket-price: 100
+  max-tickets-per-player: 50
+  draw-interval-minutes: 60
+  # Percentage of ticket money kept by the server (money sink).
+  house-cut-percent: 10
+  min-players: 2
+  refund-if-not-enough-players: true
+
+auction:
+  duration-hours: 48
+  min-price: 1
+  max-price: 1000000000
+  # Charged when listing (not refunded).
+  listing-fee-percent: 2
+  # Taken from the seller's earnings.
+  sales-tax-percent: 5
+  default-listing-limit: 5
+  # servercore.auction.limit.<number> raises the limit.
+  limit-permissions: [10, 15, 25, 50]
+  broadcast-new-listings: true
+  blacklist:
+    - BEDROCK
+    - BARRIER
+    - COMMAND
+    - MOB_SPAWNER
+    - DRAGON_EGG
+
+# ---------------------------------------------------------------------
+# Other features
+# ---------------------------------------------------------------------
+scoreboard:
+  enabled: true
+  update-ticks: 40
+  title: '&6&lLILMONKEY SMP'
+  disabled-worlds: []
+  # Placeholders: {player} {rank} {balance} {bank} {bounty} {lottery} {streak}
+  # {online} {max} {world} {maintenance} and any PlaceholderAPI %placeholder%.
+  # Max 15 lines, each line max 32 visible characters.
+  lines:
+    - '&7&m----------------'
+    - '&fRank: &e{rank}'
+    - '&fMoney: &a{balance}'
+    - '&fBank: &a{bank}'
+    - '&r'
+    - '&fBounty: &c{bounty}'
+    - '&fStreak: &6{streak} days'
+    - '&fLottery: &6{lottery}'
+    - '&r&r'
+    - '&fOnline: &b{online}/{max}'
+    - '&7&m----------------&r'
+    - '&elilmonkeysmp.eagler.host'
+
+announcer:
+  enabled: true
+  interval-seconds: 300
+  random: false
+  prefix: '&8[&6LilMonkey&8] &7'
+  messages:
+    - 'Welcome to &6LilMonkeySMP&7! Invite your friends: &elilmonkeysmp.eagler.host'
+    - 'Earn money with &f/sell&7, then keep it safe with &f/bank&7 - it even earns interest!'
+    - 'Claim your daily reward every day with &f/daily&7 to build a streak.'
+    - 'Trade with other players on the auction house: &f/ah'
+    - 'Try your luck in the &6lottery&7: &f/lottery'
+    - 'Need cash in your hands? Create a banknote with &f/banknote <amount>'
+
+staffchat:
+  format: '&8[&cStaff&8] &e{player}&8: &f{message}'
+
+# 1.8 sound names (https://helpch.at/docs/1.8.8/org/bukkit/Sound.html). Use 'none' to disable.
+sounds:
+  money-received: ORB_PICKUP
+  bank: ORB_PICKUP
+  success: LEVEL_UP

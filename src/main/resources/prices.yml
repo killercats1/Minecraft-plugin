@@ -1,0 +1,79 @@
+# Sell prices per single item for /sell and /worth (1.8.8 material names).
+# Use MATERIAL for all variants or MATERIAL:data for one variant (e.g. WOOL:14 = red wool).
+# A specific MATERIAL:data entry wins over a plain MATERIAL entry.
+# Damaged tools/armor are paid proportionally to their remaining durability.
+items:
+  # Ores & minerals
+  COAL: 2.0
+  IRON_INGOT: 8.0
+  GOLD_INGOT: 12.0
+  REDSTONE: 1.5
+  INK_SACK:4: 2.0          # lapis lazuli
+  DIAMOND: 60.0
+  EMERALD: 45.0
+  QUARTZ: 3.0
+  COAL_BLOCK: 18.0
+  IRON_BLOCK: 72.0
+  GOLD_BLOCK: 108.0
+  REDSTONE_BLOCK: 13.5
+  LAPIS_BLOCK: 18.0
+  DIAMOND_BLOCK: 540.0
+  EMERALD_BLOCK: 405.0
+  # Blocks
+  COBBLESTONE: 0.1
+  STONE: 0.2
+  DIRT: 0.05
+  SAND: 0.2
+  GRAVEL: 0.15
+  NETHERRACK: 0.1
+  OBSIDIAN: 5.0
+  LOG: 1.0
+  LOG_2: 1.0
+  WOOD: 0.25
+  GLASS: 0.5
+  CLAY_BALL: 0.5
+  # Farming
+  WHEAT: 1.0
+  CARROT_ITEM: 0.8
+  POTATO_ITEM: 0.8
+  MELON: 0.3
+  PUMPKIN: 2.0
+  SUGAR_CANE: 1.0
+  CACTUS: 0.8
+  NETHER_STALK: 1.5
+  COCOA: 1.0
+  INK_SACK:3: 1.0          # cocoa beans
+  SEEDS: 0.1
+  APPLE: 1.5
+  # Mob drops
+  ROTTEN_FLESH: 0.25
+  BONE: 0.75
+  STRING: 0.75
+  SPIDER_EYE: 1.5
+  SULPHUR: 2.0              # gunpowder
+  ENDER_PEARL: 6.0
+  BLAZE_ROD: 8.0
+  GHAST_TEAR: 15.0
+  SLIME_BALL: 3.0
+  MAGMA_CREAM: 4.0
+  LEATHER: 2.0
+  FEATHER: 0.5
+  RAW_BEEF: 1.0
+  RAW_CHICKEN: 1.0
+  PORK: 1.0
+  MUTTON: 1.0
+  RABBIT: 1.5
+  RABBIT_HIDE: 1.0
+  RABBIT_FOOT: 8.0
+  RAW_FISH: 1.0
+  EGG: 0.3
+  WOOL: 1.0
+  PRISMARINE_SHARD: 2.0
+  PRISMARINE_CRYSTALS: 2.5
+  # Tools & gear (full durability price)
+  DIAMOND_SWORD: 100.0
+  DIAMOND_PICKAXE: 150.0
+  DIAMOND_HELMET: 250.0
+  DIAMOND_CHESTPLATE: 400.0
+  DIAMOND_LEGGINGS: 350.0
+  DIAMOND_BOOTS: 200.0

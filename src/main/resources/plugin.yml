@@ -1,0 +1,169 @@
+name: ServerCore
+version: '${project.version}'
+main: com.killercats.servercore.ServerCore
+description: ${project.description}
+author: killercats1
+website: https://github.com/killercats1/Minecraft-plugin
+softdepend: [Vault, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions]
+
+commands:
+  servercore:
+    description: ServerCore help, version and reload.
+    aliases: [core]
+  maintenance:
+    description: Control maintenance mode.
+    aliases: [maint, mm]
+  staffchat:
+    description: Talk in the private staff channel or toggle it.
+    aliases: [sc, adminchat, ac]
+  scoreboard:
+    description: Toggle the sidebar scoreboard.
+    aliases: [sb]
+  pay:
+    description: Send money to another player.
+    aliases: [givemoney]
+  paytoggle:
+    description: Toggle whether you accept payments.
+    aliases: [togglepay]
+  bank:
+    description: Manage your bank account.
+    aliases: [banks]
+  banknote:
+    description: Withdraw money as a physical banknote.
+    aliases: [note, withdrawnote, cheque, check]
+  sell:
+    description: Sell items to the server.
+    aliases: [sellgui]
+  worth:
+    description: Check how much an item sells for.
+    aliases: [price]
+  daily:
+    description: Claim your daily reward.
+    aliases: [dailyreward, reward]
+  bounty:
+    description: Place and view bounties.
+    aliases: [bounties]
+  lottery:
+    description: Join the lottery.
+    aliases: [lotto, jackpot]
+  auction:
+    description: Open the auction house.
+    aliases: [ah, auctionhouse, auctions, market]
+  transactions:
+    description: View money transaction history.
+    aliases: [txlog, history, moneylog]
+  ecostats:
+    description: Economy statistics.
+    aliases: [economystats]
+  ecoadmin:
+    description: Economy administration.
+    aliases: [economyadmin]
+
+permissions:
+  servercore.*:
+    description: Everything.
+    default: op
+    children:
+      servercore.admin: true
+      servercore.player: true
+      servercore.maintenance: true
+      servercore.maintenance.bypass: true
+      servercore.maintenance.notify: true
+      servercore.staffchat: true
+      servercore.ecoadmin: true
+      servercore.ecostats: true
+      servercore.transactions.others: true
+      servercore.banknote.lookup: true
+      servercore.banknote.alerts: true
+      servercore.bounty.admin: true
+      servercore.lottery.admin: true
+      servercore.auction.admin: true
+      servercore.pay.bypasscooldown: true
+      servercore.pay.bypasstoggle: true
+  servercore.player:
+    description: All normal player features.
+    default: true
+    children:
+      servercore.scoreboard: true
+      servercore.pay: true
+      servercore.paytoggle: true
+      servercore.bank: true
+      servercore.bank.transfer: true
+      servercore.bank.top: true
+      servercore.bank.interest: true
+      servercore.banknote: true
+      servercore.banknote.redeem: true
+      servercore.sell: true
+      servercore.sell.all: true
+      servercore.worth: true
+      servercore.daily: true
+      servercore.payday: true
+      servercore.payday.rank.default: true
+      servercore.bounty: true
+      servercore.bounty.place: true
+      servercore.bounty.claim: true
+      servercore.lottery: true
+      servercore.auction: true
+      servercore.auction.sell: true
+      servercore.transactions: true
+      servercore.announcer.receive: true
+  servercore.admin:
+    description: Reload the plugin.
+    default: op
+  servercore.maintenance:
+    description: Use /maintenance.
+    default: op
+  servercore.maintenance.bypass:
+    description: Join while maintenance mode is enabled.
+    default: op
+  servercore.maintenance.notify:
+    description: Get notified when someone is blocked by maintenance.
+    default: op
+  servercore.staffchat:
+    description: Read and write staff chat.
+    default: op
+  servercore.ecoadmin:
+    description: Economy administration commands.
+    default: op
+  servercore.ecostats:
+    description: View economy statistics.
+    default: op
+  servercore.transactions.others:
+    description: View other players' transactions.
+    default: op
+  servercore.banknote.lookup:
+    description: Look up banknote ids.
+    default: op
+  servercore.banknote.alerts:
+    description: Receive duplicate banknote alerts.
+    default: op
+  servercore.bounty.admin:
+    description: Remove bounties.
+    default: op
+  servercore.bounty.exempt:
+    description: Cannot receive bounties.
+    default: false
+  servercore.lottery.admin:
+    description: Force lottery draws and add to the pot.
+    default: op
+  servercore.auction.admin:
+    description: Cancel any auction listing.
+    default: op
+  servercore.auction.nofee:
+    description: No auction listing fee.
+    default: false
+  servercore.pay.notax:
+    description: Payments are not taxed.
+    default: false
+  servercore.pay.bypasscooldown:
+    description: No /pay cooldown.
+    default: op
+  servercore.pay.bypasstoggle:
+    description: Pay players who disabled payments.
+    default: op
+  servercore.bank.nofee:
+    description: No bank withdraw/transfer fees.
+    default: false
+  servercore.banknote.nofee:
+    description: No banknote fee.
+    default: false
