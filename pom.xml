@@ -80,6 +80,14 @@
                     <exclude>plugin.yml</exclude>
                 </excludes>
             </resource>
+            <!-- Bundled so /servercore setupranks can run it -->
+            <resource>
+                <directory>luckperms</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>setup-commands.txt</include>
+                </includes>
+            </resource>
         </resources>
         <plugins>
             <plugin>

@@ -24,9 +24,15 @@ All staff ranks and `builder` can join while maintenance mode is on. They hold `
 ## How to apply it
 
 1. Install **LuckPerms** (the normal Bukkit jar supports 1.8.8) and **Vault**, then restart.
-2. Open the server **console** and paste the contents of [`setup-commands.txt`](setup-commands.txt). There is one command per line with no leading `/`. Most panels (Pterodactyl, Multicraft) run pasted lines one by one. If yours doesn't, paste them in chunks.
+2. In the server **console**, run:
+   ```
+   servercore setupranks <YourName>
+   ```
+   ServerCore runs every command from [`setup-commands.txt`](setup-commands.txt) one at a time, which takes under a minute, and then makes you owner. Leave out the name to skip the owner step.
+   - Some hosting consoles (eagler.host, for example) join pasted lines into one command, so pasting the file doesn't work there. This command avoids that.
    - `lp creategroup default` will say the group already exists. That's expected.
-3. Give yourself owner: `lp user <YourName> parent set owner`
+   - It's safe to run again; existing ranks are just updated.
+3. If you skipped the name, give yourself owner: `lp user <YourName> parent set owner`
 4. Give ranks with `lp user <name> parent set vip`, or use the tracks: `lp promote <name> donor`.
 5. Check the result in the web editor with `lp editor`. You can tweak anything there.
 
