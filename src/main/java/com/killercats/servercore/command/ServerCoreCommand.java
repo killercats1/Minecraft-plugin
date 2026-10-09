@@ -9,10 +9,12 @@ import java.util.List;
 public final class ServerCoreCommand extends BaseCommand {
 
     private final RankSetup rankSetup;
+    private final com.killercats.servercore.economy.reward.DiscordLinkReward linkReward;
 
     public ServerCoreCommand(ServerCore plugin) {
         super(plugin);
         this.rankSetup = new RankSetup(plugin);
+        this.linkReward = new com.killercats.servercore.economy.reward.DiscordLinkReward(plugin);
     }
 
     @Override
@@ -29,6 +31,17 @@ public final class ServerCoreCommand extends BaseCommand {
                 throw new CommandFail("setupranks.console-only");
             }
             rankSetup.run(sender, args.length > 1 ? args[1] : null);
+            return;
+        }
+        if (args.length > 0 && args[0].equalsIgnoreCase("linkreward")) {
+            // Run by DiscordSRV as console when an account is linked. Console only so players can't call it.
+            if (!(sender instanceof ConsoleCommandSender)) {
+                throw new CommandFail("setupranks.console-only");
+            }
+            if (args.length < 3) {
+                usage("servercore linkreward <minecraft-uuid> <discord-id>");
+            }
+            linkReward.claim(sender, args[1], args[2]);
             return;
         }
         if (args.length > 0 && args[0].equalsIgnoreCase("version")) {

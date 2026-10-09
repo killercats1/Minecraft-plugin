@@ -85,6 +85,19 @@ Wallet money lives in **EssentialsX** (through Vault), so everything stays in sy
 
 **Money sinks** to fight inflation are built in and configurable: payment tax, bank fees, bounty tax, lottery house cut, auction fees/tax, and dynamic sell prices.
 
+## Discord link reward (DiscordSRV)
+
+Players who link their Discord account with DiscordSRV (`/discord link`) get a one-time reward, $100 by default.
+
+1. In `plugins/DiscordSRV/config.yml`, set:
+   ```yaml
+   MinecraftDiscordAccountLinkedConsoleCommands: ["servercore linkreward %minecraftuuid% %discordid%", "", ""]
+   ```
+2. Restart the server, or run `/discord reload`.
+3. Change the amount, add extra commands (for example a rank or a permission) or turn off the broadcast under `discord-link-reward` in ServerCore's `config.yml`.
+
+Each Minecraft account **and** each Discord account can only get the reward once, so unlinking and relinking, or linking alts to the same Discord, gives nothing. The reward shows up in `/transactions`.
+
 ## Other features
 
 - **Scoreboard**: flicker-free sidebar with `{rank}`, `{balance}`, `{bank}`, `{bounty}`, `{lottery}`, `{streak}`, `{online}` and PlaceholderAPI. `/scoreboard` toggles it per player.

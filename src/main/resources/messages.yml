@@ -282,10 +282,20 @@ scoreboard:
 setupranks:
   no-luckperms: '&cLuckPerms is not installed or not enabled. Install it and restart first.'
   already-running: '&cThe rank setup is already running.'
-  console-only: '&cRun this from the server console: servercore setupranks <yourname>'
+  console-only: '&cThis command can only be run from the server console.'
   started: '&aCreating LuckPerms ranks: running {count} commands, this takes about {seconds} seconds...'
   done: '&aRank setup finished! Check it with: lp editor'
   done-owner: '&aRank setup finished and {player} is now owner! Rejoin the server to get your rank.'
+
+linkreward:
+  received: '&9&lDISCORD LINKED! &7Thanks for linking your account. You received &a{amount}&7!'
+  broadcast: '&9{player} &7linked their Discord account and got &a{amount}&7! Link yours with &f/discord link'
+  granted: '&aGave the Discord link reward ({amount}) to {player}.'
+  already-claimed: '&e{player} (or that Discord account) already received the Discord link reward. Nothing given.'
+  already-claimed-player: '&7You already received the Discord link reward before, so there is no reward this time.'
+  disabled: '&cThe Discord link reward is disabled in config.yml.'
+  bad-uuid: '&c''{input}'' is not a valid UUID. Use %minecraftuuid% in DiscordSRV.'
+  bad-discord-id: '&c''{input}'' is not a valid Discord id. Use %discordid% in DiscordSRV.'
 
 staffchat:
   toggle-on: '&aStaff chat toggled &lON&a. Everything you type goes to staff.'
