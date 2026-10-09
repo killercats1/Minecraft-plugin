@@ -34,6 +34,7 @@ general:
     - '&e/transactions &7- Your money history'
     - '&e/scoreboard &7- Toggle sidebar'
     - '&e/servercore reload &7- Reload configs'
+    - '&e/servercore backup [list] &7- Make or list backups'
     - '&eservercore setupranks [owner] &7- Create all LuckPerms ranks (console)'
 
 maintenance:
@@ -296,6 +297,19 @@ linkreward:
   disabled: '&cThe Discord link reward is disabled in config.yml.'
   bad-uuid: '&c''{input}'' is not a valid UUID. Use %minecraftuuid% in DiscordSRV.'
   bad-discord-id: '&c''{input}'' is not a valid Discord id. Use %discordid% in DiscordSRV.'
+
+chatguard:
+  slow-down: '&cSlow down! You are sending messages too fast.'
+  repeat: '&cPlease don''t repeat the same message.'
+  advertising: '&cAdvertising other servers or websites is not allowed.'
+  advertising-alert: '&c[ChatGuard] &e{player} &7tried to advertise: &f'
+
+backup:
+  started: '&7Starting a server backup... this may cause a little lag.'
+  finished: '&aBackup saved: &f{file} &7({size} MB, took {time})'
+  failed: '&cBackup failed: &f{error}'
+  already-running: '&cA backup is already running.'
+  list: '&7Backups ({count}), newest first:'
 
 staffchat:
   toggle-on: '&aStaff chat toggled &lON&a. Everything you type goes to staff.'

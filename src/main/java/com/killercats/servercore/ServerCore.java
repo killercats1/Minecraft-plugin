@@ -29,6 +29,8 @@ import com.killercats.servercore.economy.sell.SellCommand;
 import com.killercats.servercore.economy.sell.SellManager;
 import com.killercats.servercore.features.ActivityTracker;
 import com.killercats.servercore.features.Announcer;
+import com.killercats.servercore.features.BackupManager;
+import com.killercats.servercore.features.ChatGuard;
 import com.killercats.servercore.features.ScoreboardManager;
 import com.killercats.servercore.features.StaffChat;
 import com.killercats.servercore.gui.MenuListener;
@@ -65,6 +67,8 @@ public final class ServerCore extends JavaPlugin {
     private MaintenanceManager maintenance;
     private ScoreboardManager scoreboards;
     private Announcer announcer;
+    private ChatGuard chatGuard;
+    private BackupManager backups;
 
     private EconomyService economy;
     private TransactionLogger transactions;
@@ -110,7 +114,9 @@ public final class ServerCore extends JavaPlugin {
         register(players, activity, new MaintenanceListener(this), new MenuListener());
 
         StaffChat staffChat = new StaffChat(this);
-        register(staffChat);
+        chatGuard = new ChatGuard(this);
+        backups = new BackupManager(this);
+        register(staffChat, chatGuard);
         command("servercore", new ServerCoreCommand(this));
         command("maintenance", new MaintenanceCommand(this));
         command("staffchat", staffChat);
@@ -185,6 +191,9 @@ public final class ServerCore extends JavaPlugin {
         if (autosaveTask != null) {
             autosaveTask.cancel();
         }
+        if (backups != null) {
+            backups.shutdown();
+        }
         if (maintenance != null) {
             maintenance.shutdown();
         }
@@ -232,6 +241,8 @@ public final class ServerCore extends JavaPlugin {
         maintenance.reload();
         scoreboards.reload();
         announcer.reload();
+        chatGuard.reload();
+        backups.reload();
         if (economy != null) {
             transactions.reload();
             bank.reload();
@@ -303,6 +314,10 @@ public final class ServerCore extends JavaPlugin {
 
     public ScoreboardManager scoreboards() {
         return scoreboards;
+    }
+
+    public BackupManager backups() {
+        return backups;
     }
 
     public EconomyService economy() {
