@@ -34,6 +34,7 @@ general:
     - '&e/transactions &7- Your money history'
     - '&e/scoreboard &7- Toggle sidebar'
     - '&e/servercore reload &7- Reload configs'
+    - '&eservercore setupranks [owner] &7- Create all LuckPerms ranks (console)'
 
 maintenance:
   unknown-end: 'unknown'
@@ -277,6 +278,14 @@ scoreboard:
   toggled-on: '&aScoreboard enabled.'
   toggled-off: '&cScoreboard disabled.'
   disabled: '&cThe scoreboard is disabled on this server.'
+
+setupranks:
+  no-luckperms: '&cLuckPerms is not installed or not enabled. Install it and restart first.'
+  already-running: '&cThe rank setup is already running.'
+  console-only: '&cRun this from the server console: servercore setupranks <yourname>'
+  started: '&aCreating LuckPerms ranks: running {count} commands, this takes about {seconds} seconds...'
+  done: '&aRank setup finished! Check it with: lp editor'
+  done-owner: '&aRank setup finished and {player} is now owner! Rejoin the server to get your rank.'
 
 staffchat:
   toggle-on: '&aStaff chat toggled &lON&a. Everything you type goes to staff.'

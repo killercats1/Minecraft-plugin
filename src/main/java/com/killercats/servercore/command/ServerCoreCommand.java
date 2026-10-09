@@ -2,13 +2,17 @@ package com.killercats.servercore.command;
 
 import com.killercats.servercore.ServerCore;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.List;
 
 public final class ServerCoreCommand extends BaseCommand {
 
+    private final RankSetup rankSetup;
+
     public ServerCoreCommand(ServerCore plugin) {
         super(plugin);
+        this.rankSetup = new RankSetup(plugin);
     }
 
     @Override
@@ -17,6 +21,14 @@ public final class ServerCoreCommand extends BaseCommand {
             requirePermission(sender, "servercore.admin");
             plugin.reload();
             msg(sender, "general.reloaded");
+            return;
+        }
+        if (args.length > 0 && args[0].equalsIgnoreCase("setupranks")) {
+            // Console only: it creates the owner rank with every permission.
+            if (!(sender instanceof ConsoleCommandSender)) {
+                throw new CommandFail("setupranks.console-only");
+            }
+            rankSetup.run(sender, args.length > 1 ? args[1] : null);
             return;
         }
         if (args.length > 0 && args[0].equalsIgnoreCase("version")) {
@@ -30,7 +42,7 @@ public final class ServerCoreCommand extends BaseCommand {
 
     @Override
     protected List<String> complete(CommandSender sender, String[] args) {
-        return args.length == 1 ? list("help", "reload", "version") : list();
+        return args.length == 1 ? list("help", "reload", "version", "setupranks") : list();
     }
 
     /** /scoreboard - toggles the sidebar. */
