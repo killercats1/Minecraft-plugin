@@ -12,7 +12,7 @@ commands:
     aliases: [core]
   maintenance:
     description: Control maintenance mode.
-    aliases: [maint, mm]
+    aliases: [maint]
   staffchat:
     description: Talk in the private staff channel or toggle it.
     aliases: [sc, adminchat, ac]

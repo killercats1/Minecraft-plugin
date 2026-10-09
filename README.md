@@ -23,7 +23,7 @@ The plugin targets 1.8.8, so it works with EaglercraftX 1.8 browser players. A f
 
 - **Accounts:** Eaglercraft servers run in offline (cracked) mode, so anyone can join with any username, including a staff member's. Use a login plugin (EaglerXServer's built-in auth, or AuthMe) so nobody can impersonate an op, a staff rank or a maintenance-whitelisted name.
 - **IP forwarding:** If players connect through an EaglerX/BungeeCord proxy, turn on IP forwarding (`ip_forward: true` on the proxy, `bungeecord: true` in `spigot.yml`) so bans and the bounty same-IP check see real IPs. ServerCore ignores local/proxy addresses, so bounties still work without it.
-- **Voice chat:** Browser players can't install mods, so Simple Voice Chat only works for Java players using its mod. EaglercraftX has its own built-in voice chat for browser players; it's enabled in the EaglerX server/proxy config or your host's panel.
+- **Voice chat:** Browser players can't install mods, so Simple Voice Chat only works for Java players using its mod. Use **OpenAudioMc** instead: install it next to ServerCore, and players type `/audio`, open the link in a new tab and allow their microphone. The free tier allows 10 people in voice at once. The LuckPerms setup already includes its permissions. ServerCore's `/maintenance` doesn't use the `/mm` alias, so `/mm` stays OpenAudioMc's mic mute.
 
 ## Building
 
