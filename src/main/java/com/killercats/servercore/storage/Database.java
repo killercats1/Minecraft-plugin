@@ -132,6 +132,11 @@ public final class Database {
                     + "amount DOUBLE NOT NULL,"
                     + "contributors " + text + ","
                     + "updated BIGINT NOT NULL)");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_link_rewards ("
+                    + "uuid VARCHAR(36) NOT NULL PRIMARY KEY,"
+                    + "discord_id VARCHAR(32) NOT NULL UNIQUE,"
+                    + "name VARCHAR(16),"
+                    + "rewarded_at BIGINT NOT NULL)");
             if (!mysql) {
                 st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_tx_player ON sc_transactions (player, created)");
             }

@@ -231,6 +231,18 @@ auction:
     - MOB_SPAWNER
     - DRAGON_EGG
 
+# One-time reward for linking a Discord account with DiscordSRV.
+# In plugins/DiscordSRV/config.yml set:
+#   MinecraftDiscordAccountLinkedConsoleCommands: ["servercore linkreward %minecraftuuid% %discordid%", "", ""]
+# Each Minecraft account and each Discord account can only get it once (unlinking/relinking gives nothing).
+discord-link-reward:
+  enabled: true
+  money: 100
+  # Extra console commands run with the reward. Placeholders: {player} {uuid} {discordid}
+  # Example: 'lp user {player} permission set servercore.sell.multiplier.vip true'
+  commands: []
+  broadcast: true
+
 # ---------------------------------------------------------------------
 # Other features
 # ---------------------------------------------------------------------
