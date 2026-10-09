@@ -1,5 +1,6 @@
 # =====================================================================
-#  ServerCore - maintenance mode, advanced economy & server essentials
+#  ServerCore for LilMonkeySMP (lilmonkeysmp.eagler.host)
+#  Maintenance mode, advanced economy & server essentials
 #  Built for Spigot/Paper 1.8.8. Economy runs on Vault + EssentialsX.
 # =====================================================================
 
@@ -44,7 +45,7 @@ maintenance:
   # Server list MOTD while maintenance is on. {reason} {remaining}
   motd:
     enabled: true
-    line1: '&c&l        SERVER MAINTENANCE'
+    line1: '&6&lLilMonkeySMP &8- &c&lMAINTENANCE'
     line2: '&7{reason} &8| &eBack in: &f{remaining}'
   # Max players shown in the server list during maintenance (-1 = unchanged).
   max-players-display: 0
@@ -236,7 +237,7 @@ auction:
 scoreboard:
   enabled: true
   update-ticks: 40
-  title: '&6&lYOUR SERVER'
+  title: '&6&lLILMONKEY SMP'
   disabled-worlds: []
   # Placeholders: {player} {rank} {balance} {bank} {bounty} {lottery} {streak}
   # {online} {max} {world} {maintenance} and any PlaceholderAPI %placeholder%.
@@ -253,14 +254,15 @@ scoreboard:
     - '&r&r'
     - '&fOnline: &b{online}/{max}'
     - '&7&m----------------&r'
-    - '&eplay.yourserver.net'
+    - '&elilmonkeysmp.eagler.host'
 
 announcer:
   enabled: true
   interval-seconds: 300
   random: false
-  prefix: '&8[&6Info&8] &7'
+  prefix: '&8[&6LilMonkey&8] &7'
   messages:
+    - 'Welcome to &6LilMonkeySMP&7! Invite your friends: &elilmonkeysmp.eagler.host'
     - 'Earn money with &f/sell&7, then keep it safe with &f/bank&7 - it even earns interest!'
     - 'Claim your daily reward every day with &f/daily&7 to build a streak.'
     - 'Trade with other players on the auction house: &f/ah'

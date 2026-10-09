@@ -1,6 +1,6 @@
 # ServerCore
 
-An all-in-one core plugin for **Spigot / Paper 1.8.8** servers:
+The core plugin for **LilMonkeySMP** (`lilmonkeysmp.eagler.host`): an all-in-one plugin for **Spigot / Paper 1.8.8** servers:
 
 - **Maintenance mode**: only ops, chosen ranks and whitelisted players can join.
 - **Advanced economy** built on top of **EssentialsX** through Vault. Banks with interest, banknotes, dynamic sell prices, an auction house, bounties, a lottery, daily rewards, payday salaries and a full transaction log.

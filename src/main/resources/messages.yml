@@ -1,6 +1,6 @@
 # ServerCore messages. Color codes use '&'. {placeholders} are filled in by the plugin.
 # Set a message to '' to disable it. Lists are sent as multiple lines.
-prefix: '&8[&6&lServer&8] &7'
+prefix: '&8[&6&lLilMonkey&8] &7'
 
 general:
   no-permission: '&cYou do not have permission to do that.'
@@ -38,13 +38,13 @@ general:
 maintenance:
   unknown-end: 'unknown'
   kick-message:
-    - '&c&lSERVER MAINTENANCE'
+    - '&6&lLilMonkeySMP &8- &c&lMAINTENANCE'
     - ''
     - '&7We are currently performing maintenance.'
     - '&7Reason: &f{reason}'
     - '&7Expected back in: &e{remaining}'
     - ''
-    - '&7Follow our Discord for updates!'
+    - '&7Check back soon at &elilmonkeysmp.eagler.host'
   join-reminder: '&cMaintenance mode is ON &7({reason}, ends in &f{remaining}&7).'
   join-attempt: '&e{player} &7tried to join during maintenance.'
   enabled-broadcast: '&c&lMaintenance mode enabled &7by {actor}: &f{reason}&7. Non-staff players will be disconnected.'
