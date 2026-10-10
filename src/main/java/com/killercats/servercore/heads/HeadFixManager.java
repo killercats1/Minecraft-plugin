@@ -188,6 +188,7 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
             }
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
+            joinedAt.putIfAbsent(player.getUniqueId(), System.currentTimeMillis());
             snapshot(player, true, false);
         }
         seedAll();
@@ -471,9 +472,10 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         boolean placeholder = PLACEHOLDER.equals(head.textures);
         // A head with a real texture but no UUID was made on purpose (decorative /give heads); Spigot's
         // own lookup never produces that. Never turn it into a player's head, even if a player has its name.
-        boolean decorative = head.id == null && head.hasTextures() && !placeholder;
+        UUID stable = head.hasTextures() ? stableId(head.textures) : null;
+        boolean decorative = head.hasTextures() && !placeholder && (head.id == null || head.id.equals(stable));
         if (hasName && !decorative) {
-            HeadIdentity identity = registry.byName(name);
+            HeadIdentity identity = registry.owner(name);
             if (identity != null) {
                 boolean sameId = head.id != null && head.id.equals(identity.uuid);
                 if (head.id == null || (!sameId && premiumNamesakes)) {
@@ -493,10 +495,14 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         if (texturedWithoutId && hasName && head.id == null && head.hasTextures()) {
             // Decorative head without a UUID: Eaglercraft can't draw it at all. A stable UUID derived
             // from the texture keeps identical heads stackable and stops Spigot replacing the texture.
-            UUID stable = UUID.nameUUIDFromBytes(("ServerCoreHead:" + head.textures).getBytes(StandardCharsets.UTF_8));
             return reflection.newProfile(stable, name, head.textures, head.signature, head.eaglerFlag);
         }
         return null;
+    }
+
+    /** The UUID given to decorative heads: derived from the texture, so identical heads still stack. */
+    static UUID stableId(String textures) {
+        return UUID.nameUUIDFromBytes(("ServerCoreHead:" + textures).getBytes(StandardCharsets.UTF_8));
     }
 
     static boolean isPlayerHead(ItemStack item) {
@@ -749,13 +755,24 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         if (!active) {
             return;
         }
-        String label = event.getMessage().split(" ", 2)[0].toLowerCase(Locale.ROOT);
+        String[] words = event.getMessage().split(" ");
+        String label = words[0].toLowerCase(Locale.ROOT);
         if (label.endsWith("skin") || label.endsWith("skins")) {
-            Player player = event.getPlayer();
+            // The sender, plus any online player named in the command (e.g. /skin clear <player>).
+            Set<Player> targets = new LinkedHashSet<Player>();
+            targets.add(event.getPlayer());
+            for (int i = 1; i < words.length; i++) {
+                Player named = Bukkit.getPlayerExact(words[i]);
+                if (named != null) {
+                    targets.add(named);
+                }
+            }
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (player.isOnline()) {
-                    // An explicit skin change may also remove the skin.
-                    snapshot(player, false, trusted(player));
+                for (Player target : targets) {
+                    if (target.isOnline()) {
+                        // An explicit skin change may also remove the skin.
+                        snapshot(target, false, trusted(target));
+                    }
                 }
             }, 40L);
         }
@@ -844,7 +861,7 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         if (online != null) {
             snapshot(online, true, trusted(online));
         }
-        HeadIdentity identity = online != null ? registry.byUuid(online.getUniqueId()) : registry.byName(name);
+        HeadIdentity identity = online != null ? registry.byUuid(online.getUniqueId()) : registry.owner(name);
         if (identity == null) {
             return null;
         }

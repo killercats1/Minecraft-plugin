@@ -383,7 +383,7 @@ lagguard:
   emergency-on: '&cON'
   emergency-off: '&aoff'
   sweep-off: '&7off'
-  sweep-disabled: '&cGround item clearing is turned off in config.yml (lag-guard.item-sweep).'
+  sweep-disabled: '&cGround item clearing is turned off in config.yml (lag-guard.enabled or lag-guard.item-sweep.enabled).'
   no-safe-spot: '&cNo safe spot to stand in {world} chunk {x}, {z}.'
   chunk-line: '&e#{rank} &f{world} &7chunk &f{x}, {z} &8- &c{count} entities &7({types})'
   chunk-hover: '&eClick to teleport there'

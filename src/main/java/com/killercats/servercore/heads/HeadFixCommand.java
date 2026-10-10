@@ -146,7 +146,7 @@ public final class HeadFixCommand extends BaseCommand {
             msg(player, "headfix.no-owner");
             return;
         }
-        HeadIdentity known = data.name == null ? null : heads.registry().byName(data.name);
+        HeadIdentity known = data.name == null ? null : heads.registry().owner(data.name);
         String idText;
         if (data.id == null) {
             idText = plugin.messages().get("headfix.id-none");

@@ -381,6 +381,7 @@ lag-guard:
     # (DISPENSE_EGG is left out on purpose: a capped dispenser would use up the egg.)
     reasons: [BREEDING, SPAWNER, EGG, SPAWNER_EGG, BUILD_SNOWMAN, BUILD_IRONGOLEM, SLIME_SPLIT]
     per-type-per-chunk: 24
+    # Per-mob limits. Use "overrides: {}" to have no overrides.
     overrides:
       CHICKEN: 32
     animals-per-chunk: 48

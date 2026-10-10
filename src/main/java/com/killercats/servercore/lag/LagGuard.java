@@ -148,6 +148,7 @@ public final class LagGuard implements Listener {
             task.cancel();
         }
         tasks.clear();
+        boolean wasEmergency = emergency;
         endEmergency(false);
         ConfigurationSection c = plugin.getConfig().getConfigurationSection("lag-guard");
         if (c == null) {
@@ -196,11 +197,13 @@ public final class LagGuard implements Listener {
         }
         perTypePerChunk = Math.max(1, c.getInt("spawn-caps.per-type-per-chunk", 24));
         overrides.clear();
+        // Two-argument get() ignores the jar defaults: tells "not in the file" from "emptied on purpose".
+        boolean overridesInFile = c.get("spawn-caps.overrides", null) != null;
         ConfigurationSection over = c.getConfigurationSection("spawn-caps.overrides");
         if (over != null) {
             Set<String> keys = over.getKeys(false);
             // An existing config.yml without this section only has it through the jar defaults.
-            if (keys.isEmpty() && over.getDefaultSection() != null) {
+            if (keys.isEmpty() && !overridesInFile && over.getDefaultSection() != null) {
                 keys = over.getDefaultSection().getKeys(false);
             }
             for (String key : keys) {
@@ -224,6 +227,13 @@ public final class LagGuard implements Listener {
         alertCooldownMillis = Math.max(1, c.getLong("emergency.alert-cooldown-minutes", 5)) * 60_000L;
         if (!enabled) {
             return;
+        }
+        if (wasEmergency && emergencyEnabled) {
+            // A reload during a lag alert keeps the alert going (with the new settings).
+            emergency = true;
+            if (blockNaturalSpawns) {
+                pauseNaturalSpawns();
+            }
         }
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickSweep, 20L, 20L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickEmergency, 100L, 100L));
@@ -496,13 +506,21 @@ public final class LagGuard implements Listener {
             if (excludedWorlds.contains(world.getName().toLowerCase(Locale.ROOT)) || savedSpawnLimits.containsKey(world.getUID())) {
                 continue;
             }
-            savedSpawnLimits.put(world.getUID(), new int[]{world.getMonsterSpawnLimit(), world.getAnimalSpawnLimit(),
-                    world.getWaterAnimalSpawnLimit(), world.getAmbientSpawnLimit()});
+            // A world following bukkit.yml reports the server value; save -1 so it keeps following it.
+            savedSpawnLimits.put(world.getUID(), new int[]{
+                    own(world.getMonsterSpawnLimit(), Bukkit.getMonsterSpawnLimit()),
+                    own(world.getAnimalSpawnLimit(), Bukkit.getAnimalSpawnLimit()),
+                    own(world.getWaterAnimalSpawnLimit(), Bukkit.getWaterAnimalSpawnLimit()),
+                    own(world.getAmbientSpawnLimit(), Bukkit.getAmbientSpawnLimit())});
             world.setMonsterSpawnLimit(0);
             world.setAnimalSpawnLimit(0);
             world.setWaterAnimalSpawnLimit(0);
             world.setAmbientSpawnLimit(0);
         }
+    }
+
+    private static int own(int worldValue, int serverValue) {
+        return worldValue == serverValue ? -1 : worldValue;
     }
 
     private void restoreSpawnLimits() {

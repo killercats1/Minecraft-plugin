@@ -85,7 +85,10 @@ final class HeadRegistry {
             return;
         }
         byUuid.put(identity.uuid, identity);
-        byExactName.put(identity.name, identity);
+        HeadIdentity exact = byExactName.get(identity.name);
+        if (exact == null || exact == identity || exact.updated <= identity.updated) {
+            byExactName.put(identity.name, identity);
+        }
         String key = identity.name.toLowerCase(Locale.ROOT);
         HeadIdentity existing = byName.get(key);
         // Case-only or reused names: the most recently seen player wins.
@@ -96,6 +99,15 @@ final class HeadRegistry {
 
     HeadIdentity byName(String name) {
         return name == null ? null : byName.get(name.toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * The owner of a head name: the player with exactly that (case-sensitive) name, otherwise the
+     * player who most recently used the name in any capitalisation. Matches how heads are seeded.
+     */
+    HeadIdentity owner(String name) {
+        HeadIdentity exact = byExactName(name);
+        return exact != null ? exact : byName(name);
     }
 
     /** The player whose exact (case-sensitive) name this is, if any. */

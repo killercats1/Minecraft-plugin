@@ -107,6 +107,9 @@ public final class LagGuardCommand extends BaseCommand {
                 org.bukkit.block.Block floor = world.getBlockAt(x, y - 1, z);
                 org.bukkit.block.Block feet = world.getBlockAt(x, y, z);
                 org.bukkit.block.Block head = world.getBlockAt(x, y + 1, z);
+                if (head.isLiquid() || feet.isLiquid()) {
+                    break; // under water or a lava sea: try another column instead of the bottom
+                }
                 if (floor.getType().isSolid() && !isHazard(floor.getType()) && !feet.getType().isSolid() && !isHazard(feet.getType())
                         && !head.getType().isSolid() && !isHazard(head.getType())) {
                     return new Location(world, x + 0.5, y, z + 0.5);
@@ -129,6 +132,8 @@ public final class LagGuardCommand extends BaseCommand {
             case FIRE:
             case CACTUS:
             case WEB:
+            case PORTAL:
+            case ENDER_PORTAL:
                 return true;
             default:
                 return false;
