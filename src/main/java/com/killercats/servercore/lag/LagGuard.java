@@ -90,8 +90,13 @@ public final class LagGuard implements Listener {
     private final List<DeathMark> deaths = new ArrayList<DeathMark>();
     private final Map<UUID, Long> notified = new HashMap<UUID, Long>();
     private final Set<Integer> warned = new HashSet<Integer>();
+    private final Map<UUID, int[]> savedSpawnLimits = new HashMap<UUID, int[]>();
+    private int prevSecondsLeft = Integer.MAX_VALUE;
+    private java.lang.reflect.Field itemAgeField;
+    private boolean itemAgeResolved;
 
     // settings
+    private boolean enabled;
     private boolean sweepEnabled;
     private long sweepIntervalMillis;
     private int minAgeTicks;
@@ -143,20 +148,20 @@ public final class LagGuard implements Listener {
             task.cancel();
         }
         tasks.clear();
+        endEmergency(false);
         ConfigurationSection c = plugin.getConfig().getConfigurationSection("lag-guard");
-        if (c == null || !c.getBoolean("enabled", true)) {
-            sweepEnabled = false;
-            capsEnabled = false;
-            emergencyEnabled = false;
-            emergency = false;
-            return;
+        if (c == null) {
+            c = plugin.getConfig().createSection("lag-guard");
         }
+        // The safety filters are always loaded, even when parts are switched off, so nothing can ever
+        // be swept without them.
+        enabled = c.getBoolean("enabled", true);
         excludedWorlds.clear();
         for (String world : c.getStringList("excluded-worlds")) {
             excludedWorlds.add(world.toLowerCase(Locale.ROOT));
         }
 
-        sweepEnabled = c.getBoolean("item-sweep.enabled", true);
+        sweepEnabled = enabled && c.getBoolean("item-sweep.enabled", true);
         sweepIntervalMillis = Math.max(1, c.getLong("item-sweep.interval-minutes", 10)) * 60_000L;
         minAgeTicks = Math.max(0, c.getInt("item-sweep.min-age-seconds", 180)) * 20;
         warnSeconds.clear();
@@ -178,8 +183,9 @@ public final class LagGuard implements Listener {
         deathRadiusSquared = radius * radius;
         nextSweep = System.currentTimeMillis() + sweepIntervalMillis;
         warned.clear();
+        prevSecondsLeft = Integer.MAX_VALUE;
 
-        capsEnabled = c.getBoolean("spawn-caps.enabled", true);
+        capsEnabled = enabled && c.getBoolean("spawn-caps.enabled", true);
         capReasons.clear();
         for (String name : c.getStringList("spawn-caps.reasons")) {
             try {
@@ -192,7 +198,12 @@ public final class LagGuard implements Listener {
         overrides.clear();
         ConfigurationSection over = c.getConfigurationSection("spawn-caps.overrides");
         if (over != null) {
-            for (String key : over.getKeys(false)) {
+            Set<String> keys = over.getKeys(false);
+            // An existing config.yml without this section only has it through the jar defaults.
+            if (keys.isEmpty() && over.getDefaultSection() != null) {
+                keys = over.getDefaultSection().getKeys(false);
+            }
+            for (String key : keys) {
                 try {
                     overrides.put(EntityType.valueOf(key.toUpperCase(Locale.ROOT)), Math.max(1, over.getInt(key)));
                 } catch (IllegalArgumentException e) {
@@ -203,7 +214,7 @@ public final class LagGuard implements Listener {
         animalsPerChunk = Math.max(1, c.getInt("spawn-caps.animals-per-chunk", 48));
         notifyRadius = Math.max(0, c.getInt("spawn-caps.notify-radius", 8));
 
-        emergencyEnabled = c.getBoolean("emergency.enabled", true);
+        emergencyEnabled = enabled && c.getBoolean("emergency.enabled", true);
         enterBelow = c.getDouble("emergency.enter-below", 15.0);
         sustainMillis = Math.max(5, c.getLong("emergency.sustain-seconds", 60)) * 1000L;
         exitAbove = c.getDouble("emergency.exit-above", 18.0);
@@ -211,10 +222,9 @@ public final class LagGuard implements Listener {
         blockNaturalSpawns = c.getBoolean("emergency.block-natural-spawns", true);
         alertTopChunks = Math.max(1, c.getInt("emergency.alert-top-chunks", 5));
         alertCooldownMillis = Math.max(1, c.getLong("emergency.alert-cooldown-minutes", 5)) * 60_000L;
-        if (!emergencyEnabled) {
-            emergency = false;
+        if (!enabled) {
+            return;
         }
-
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickSweep, 20L, 20L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickEmergency, 100L, 100L));
     }
@@ -224,7 +234,12 @@ public final class LagGuard implements Listener {
             task.cancel();
         }
         tasks.clear();
+        endEmergency(false);
         meter.shutdown();
+    }
+
+    public boolean sweepAvailable() {
+        return sweepEnabled;
     }
 
     // ------------------------------------------------------------------ item sweep
@@ -239,21 +254,39 @@ public final class LagGuard implements Listener {
             sweep(true);
             nextSweep = now + sweepIntervalMillis;
             warned.clear();
+            prevSecondsLeft = Integer.MAX_VALUE;
             return;
         }
-        if (warnSeconds.contains(secondsLeft) && warned.add(secondsLeft) && sweepBroadcast && !Bukkit.getOnlinePlayers().isEmpty()) {
+        // The task can run late when the server lags, so catch every warning mark passed since last time.
+        boolean due = false;
+        for (int mark : warnSeconds) {
+            if (mark >= secondsLeft && mark < prevSecondsLeft && warned.add(mark)) {
+                due = true;
+            }
+        }
+        prevSecondsLeft = secondsLeft;
+        if (due && sweepBroadcast && !Bukkit.getOnlinePlayers().isEmpty()) {
             broadcast("lagguard.sweep-warning", "seconds", secondsLeft);
         }
     }
 
-    /** Schedules a sweep in the given number of seconds (with the normal warnings). */
-    public void sweepIn(int seconds) {
+    /** Schedules a sweep in the given number of seconds (with the normal warnings). Returns false if sweeping is off. */
+    public boolean sweepIn(int seconds) {
+        if (!sweepEnabled) {
+            return false;
+        }
         nextSweep = System.currentTimeMillis() + seconds * 1000L;
         warned.clear();
+        for (int mark : warnSeconds) {
+            if (mark >= seconds) {
+                warned.add(mark);
+            }
+        }
+        prevSecondsLeft = seconds;
         if (sweepBroadcast) {
             broadcast("lagguard.sweep-warning", "seconds", seconds);
-            warned.add(seconds);
         }
+        return true;
     }
 
     /** Removes old ground items. Returns how many were removed. */
@@ -283,8 +316,36 @@ public final class LagGuard implements Listener {
         return removed;
     }
 
+    /**
+     * Ticks since the item was dropped. When a fresh drop merges into an older ground stack, vanilla keeps
+     * the younger age (its despawn timer) but not ticksLived, so read the real age field when possible.
+     */
+    private int age(Item item) {
+        int age = item.getTicksLived();
+        if (!itemAgeResolved) {
+            itemAgeResolved = true;
+            try {
+                Object handle = item.getClass().getMethod("getHandle").invoke(item);
+                java.lang.reflect.Field field = handle.getClass().getDeclaredField("age");
+                field.setAccessible(true);
+                itemAgeField = field;
+            } catch (Exception | LinkageError e) {
+                itemAgeField = null;
+            }
+        }
+        if (itemAgeField != null) {
+            try {
+                Object handle = item.getClass().getMethod("getHandle").invoke(item);
+                age = Math.min(age, itemAgeField.getInt(handle));
+            } catch (Exception ignored) {
+                // keep ticksLived
+            }
+        }
+        return age;
+    }
+
     private boolean keep(Item item) {
-        if (item.getTicksLived() < minAgeTicks || item.isInsideVehicle() || item.isCustomNameVisible()) {
+        if (age(item) < minAgeTicks || item.isInsideVehicle() || item.isCustomNameVisible()) {
             return true;
         }
         // 32767 is vanilla's "can never be picked up" marker used by display/showcase items.
@@ -349,15 +410,12 @@ public final class LagGuard implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onSpawn(CreatureSpawnEvent event) {
-        CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
-        if (emergency && blockNaturalSpawns
-                && (reason == CreatureSpawnEvent.SpawnReason.NATURAL || reason == CreatureSpawnEvent.SpawnReason.JOCKEY)) {
-            event.setCancelled(true);
-            spawnsBlocked++;
+        if (event.getLocation().getWorld() == null
+                || excludedWorlds.contains(event.getLocation().getWorld().getName().toLowerCase(Locale.ROOT))) {
             return;
         }
-        if (!capsEnabled || !capReasons.contains(reason) || event.getLocation().getWorld() == null
-                || excludedWorlds.contains(event.getLocation().getWorld().getName().toLowerCase(Locale.ROOT))) {
+        CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
+        if (!capsEnabled || !capReasons.contains(reason)) {
             return;
         }
         Entity spawning = event.getEntity();
@@ -420,9 +478,7 @@ public final class LagGuard implements Listener {
                 if (highSince == 0) {
                     highSince = now;
                 } else if (now - highSince >= 60_000L) {
-                    emergency = false;
-                    highSince = 0;
-                    lowSince = 0;
+                    endEmergency(true);
                     notifyStaff("lagguard.emergency-end", "tps", TpsMeter.colored(tps));
                 }
             } else {
@@ -431,10 +487,57 @@ public final class LagGuard implements Listener {
         }
     }
 
+    /**
+     * Natural spawning is paused through the worlds' spawn limits: with a limit of 0 the server skips
+     * the whole spawn pass, while cancelling spawn events would still build every mob first.
+     */
+    private void pauseNaturalSpawns() {
+        for (World world : Bukkit.getWorlds()) {
+            if (excludedWorlds.contains(world.getName().toLowerCase(Locale.ROOT)) || savedSpawnLimits.containsKey(world.getUID())) {
+                continue;
+            }
+            savedSpawnLimits.put(world.getUID(), new int[]{world.getMonsterSpawnLimit(), world.getAnimalSpawnLimit(),
+                    world.getWaterAnimalSpawnLimit(), world.getAmbientSpawnLimit()});
+            world.setMonsterSpawnLimit(0);
+            world.setAnimalSpawnLimit(0);
+            world.setWaterAnimalSpawnLimit(0);
+            world.setAmbientSpawnLimit(0);
+        }
+    }
+
+    private void restoreSpawnLimits() {
+        for (Map.Entry<UUID, int[]> entry : savedSpawnLimits.entrySet()) {
+            World world = Bukkit.getWorld(entry.getKey());
+            if (world == null) {
+                continue;
+            }
+            int[] limits = entry.getValue();
+            world.setMonsterSpawnLimit(limits[0]);
+            world.setAnimalSpawnLimit(limits[1]);
+            world.setWaterAnimalSpawnLimit(limits[2]);
+            world.setAmbientSpawnLimit(limits[3]);
+        }
+        savedSpawnLimits.clear();
+    }
+
+    private void endEmergency(boolean log) {
+        boolean was = emergency;
+        emergency = false;
+        highSince = 0;
+        lowSince = 0;
+        restoreSpawnLimits();
+        if (was && log) {
+            plugin.getLogger().info("Lag guard: emergency mode off.");
+        }
+    }
+
     private void enterEmergency(double tps) {
         emergency = true;
         lowSince = 0;
         highSince = 0;
+        if (blockNaturalSpawns) {
+            pauseNaturalSpawns();
+        }
         plugin.getLogger().warning("Lag guard: TPS " + String.format(Locale.US, "%.1f", tps) + " - emergency mode on.");
         if (earlySweep && sweepEnabled) {
             sweepIn(10);
@@ -506,7 +609,7 @@ public final class LagGuard implements Listener {
         for (ChunkReport report : chunks) {
             String line = plugin.messages().get("lagguard.chunk-line", "rank", rank++, "world", report.world, "x", report.x, "z", report.z,
                     "count", report.entities, "types", report.top);
-            if (sender instanceof Player) {
+            if (sender instanceof Player && sender.hasPermission("servercore.lagguard")) {
                 // 1.8-era chat API only: the server's bundled chat library is older than the one we compile against.
                 TextComponent component = new TextComponent(TextComponent.fromLegacyText(line));
                 component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,

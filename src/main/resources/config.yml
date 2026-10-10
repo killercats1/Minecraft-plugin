@@ -378,7 +378,8 @@ lag-guard:
   # Blocks NEW mobs from breeding/spawners/eggs when a chunk already has too many. Existing mobs are never killed.
   spawn-caps:
     enabled: true
-    reasons: [BREEDING, SPAWNER, EGG, SPAWNER_EGG, DISPENSE_EGG, BUILD_SNOWMAN, BUILD_IRONGOLEM, SLIME_SPLIT]
+    # (DISPENSE_EGG is left out on purpose: a capped dispenser would use up the egg.)
+    reasons: [BREEDING, SPAWNER, EGG, SPAWNER_EGG, BUILD_SNOWMAN, BUILD_IRONGOLEM, SLIME_SPLIT]
     per-type-per-chunk: 24
     overrides:
       CHICKEN: 32

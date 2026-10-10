@@ -82,7 +82,10 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
     private boolean active;
     private boolean brandRegistered;
 
+    private static final long TRUST_MILLIS = 120_000L;
+
     private final Map<UUID, ClientType> online = new ConcurrentHashMap<UUID, ClientType>();
+    private final Map<UUID, Long> joinedAt = new ConcurrentHashMap<UUID, Long>();
     private final Set<UUID> brandEagler = Collections.newSetFromMap(new ConcurrentHashMap<UUID, Boolean>());
     private final LinkedHashSet<String> chunkQueue = new LinkedHashSet<String>();
     private final List<BukkitTask> tasks = new ArrayList<BukkitTask>();
@@ -171,6 +174,11 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
             registry.load(Math.max(1, c.getInt("remember-days", 90)), Math.max(10, c.getInt("max-remembered", 2000)));
         }
         active = true;
+        if (!detectBrand && brandRegistered) {
+            Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin, BRAND_CHANNEL, this);
+            brandRegistered = false;
+            brandEagler.clear();
+        }
         if (detectBrand && !brandRegistered) {
             try {
                 Bukkit.getMessenger().registerIncomingPluginChannel(plugin, BRAND_CHANNEL, this);
@@ -180,14 +188,14 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
             }
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
-            snapshot(player);
+            snapshot(player, true, false);
         }
         seedAll();
 
         long resnapshot = Math.max(1, c.getLong("resnapshot-minutes", 5)) * 60L * 20L;
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                snapshot(player);
+                snapshot(player, true, trusted(player));
             }
         }, resnapshot, resnapshot));
         long reseed = Math.max(1, c.getLong("reseed-minutes", 20)) * 60L * 20L;
@@ -267,14 +275,14 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
 
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-        if (!active || !BRAND_CHANNEL.equals(channel) || message == null) {
+        if (!active || !detectBrand || !BRAND_CHANNEL.equals(channel) || message == null) {
             return;
         }
         String brand = readBrand(message);
         if (brand != null && brand.toLowerCase(Locale.ROOT).startsWith("eagler") && brandEagler.add(player.getUniqueId())) {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (player.isOnline()) {
-                    snapshot(player);
+                    snapshot(player, true, false);
                 }
             });
         }
@@ -301,25 +309,54 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
 
     // ------------------------------------------------------------------ registry / seeding
 
-    /** Records an online player's current name, skin and client, and re-seeds their head if it changed. */
-    void snapshot(Player player) {
-        if (!active) {
+    /** Players who have been online long enough to have passed the login plugin (an impostor gets kicked first). */
+    private boolean trusted(Player player) {
+        Long since = joinedAt.get(player.getUniqueId());
+        return since != null && System.currentTimeMillis() - since >= TRUST_MILLIS;
+    }
+
+    /**
+     * Records an online player's current name, skin and client, and re-seeds their head if it changed.
+     *
+     * @param keepKnownTextures a missing live skin does not erase a known one (skin plugins apply skins
+     *                          late after join); only an explicit /skin change may clear it
+     * @param trustClient       allow changing a known player's stored client type (Eaglercraft/Java);
+     *                          only for sessions that have been online for a while, so someone joining
+     *                          with another player's name on this offline server can't flip their heads
+     */
+    void snapshot(Player player, boolean keepKnownTextures, boolean trustClient) {
+        if (!active || isReservedName(player.getName())) {
             return;
         }
         HeadReflection.ProfileData live = reflection.readPlayer(player);
         ClientType detected = detect(player, live);
+        online.put(player.getUniqueId(), detected);
         String textures = live == null ? null : live.textures;
         String signature = live == null ? null : live.signature;
         if (PLACEHOLDER.equals(textures)) {
             textures = null;
             signature = null;
         }
+        HeadIdentity known = registry.byUuid(player.getUniqueId());
+        if (known != null) {
+            if (textures == null && keepKnownTextures) {
+                textures = known.textures;
+                signature = known.signature;
+            }
+            if (!trustClient && known.client != ClientType.UNKNOWN) {
+                detected = ClientType.UNKNOWN; // keep the stored client until the session is trusted
+            }
+        }
         boolean changed = registry.update(player.getUniqueId(), player.getName(), detected, textures, signature);
         HeadIdentity identity = registry.byUuid(player.getUniqueId());
-        online.put(player.getUniqueId(), identity == null ? detected : identity.client);
         if (changed && identity != null) {
             seed(identity);
         }
+    }
+
+    /** Mojang's MHF_* heads (arrows, question marks in menus) must keep their real textures. */
+    static boolean isReservedName(String name) {
+        return name != null && name.regionMatches(true, 0, "MHF_", 0, 4);
     }
 
     boolean wantsEaglerFlag(HeadIdentity identity) {
@@ -382,17 +419,25 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
     }
 
     private void seed(HeadIdentity identity) {
-        if (!active || !seedCache || !reflection.canSeed() || identity.name == null) {
+        if (!active || !seedCache || !reflection.canSeed() || identity.name == null || isReservedName(identity.name)) {
             return;
         }
         Object profile = build(identity);
-        Set<String> keys = new LinkedHashSet<String>();
-        keys.add(identity.name);
-        keys.add(identity.name.toLowerCase());
-        keys.add(identity.name.toLowerCase(Locale.ROOT));
-        for (String key : keys) {
-            reflection.seed(key, profile);
+        // Lowercase aliases belong to whichever player most recently used the name (registry.byName),
+        // and must never overwrite another player's exact (case-sensitive) name.
+        if (registry.byName(identity.name) == identity) {
+            for (String alias : new String[]{identity.name.toLowerCase(), identity.name.toLowerCase(Locale.ROOT)}) {
+                if (!alias.equals(identity.name) && !isExactNameOfOther(alias, identity)) {
+                    reflection.seed(alias, profile);
+                }
+            }
         }
+        reflection.seed(identity.name, profile);
+    }
+
+    private boolean isExactNameOfOther(String key, HeadIdentity identity) {
+        HeadIdentity other = registry.byExactName(key);
+        return other != null && other != identity;
     }
 
     /** Pre-fills Spigot's head skin cache so every head created by name gets a working profile instantly. */
@@ -402,12 +447,12 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         }
         List<HeadIdentity> list = new ArrayList<HeadIdentity>(registry.all());
         list.sort((a, b) -> Long.compare(b.updated, a.updated));
-        int count = 0;
-        for (HeadIdentity identity : list) {
-            if (count++ >= maxSeeded) {
-                break;
-            }
-            seed(identity);
+        if (list.size() > maxSeeded) {
+            list = list.subList(0, maxSeeded);
+        }
+        // Oldest first, so where names collide the newest player's entry is written last.
+        for (int i = list.size() - 1; i >= 0; i--) {
+            seed(list.get(i));
         }
     }
 
@@ -420,7 +465,14 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         }
         String name = head.name;
         boolean hasName = name != null && !name.trim().isEmpty();
-        if (hasName) {
+        if (hasName && isReservedName(name)) {
+            return null;
+        }
+        boolean placeholder = PLACEHOLDER.equals(head.textures);
+        // A head with a real texture but no UUID was made on purpose (decorative /give heads); Spigot's
+        // own lookup never produces that. Never turn it into a player's head, even if a player has its name.
+        boolean decorative = head.id == null && head.hasTextures() && !placeholder;
+        if (hasName && !decorative) {
             HeadIdentity identity = registry.byName(name);
             if (identity != null) {
                 boolean sameId = head.id != null && head.id.equals(identity.uuid);
@@ -430,7 +482,8 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
                 if (sameId) {
                     boolean wantFlag = wantsEaglerFlag(identity);
                     boolean hasFlag = head.eaglerFlag != null;
-                    if (!head.hasTextures() || wantFlag != hasFlag) {
+                    boolean knownSkin = identity.textures != null && !identity.textures.isEmpty();
+                    if (!head.hasTextures() || wantFlag != hasFlag || (placeholder && knownSkin)) {
                         return build(identity);
                     }
                 }
@@ -634,16 +687,17 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
             return;
         }
         Player player = event.getPlayer();
-        snapshot(player);
+        joinedAt.put(player.getUniqueId(), System.currentTimeMillis());
+        snapshot(player, true, false);
         // SkinsRestorer and similar plugins apply skins a little after join.
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline()) {
-                snapshot(player);
+                snapshot(player, true, false);
             }
         }, 40L);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline()) {
-                snapshot(player);
+                snapshot(player, true, false);
             }
         }, 200L);
         if (repairInventories) {
@@ -683,9 +737,10 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         if (active) {
-            snapshot(event.getPlayer());
+            snapshot(event.getPlayer(), true, trusted(event.getPlayer()));
         }
         online.remove(event.getPlayer().getUniqueId());
+        joinedAt.remove(event.getPlayer().getUniqueId());
         brandEagler.remove(event.getPlayer().getUniqueId());
     }
 
@@ -699,7 +754,8 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
             Player player = event.getPlayer();
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (player.isOnline()) {
-                    snapshot(player);
+                    // An explicit skin change may also remove the skin.
+                    snapshot(player, false, trusted(player));
                 }
             }, 40L);
         }
@@ -733,10 +789,9 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         if (!active || !repairDropped) {
             return;
         }
-        ItemStack stack = event.getItem().getItemStack();
-        if (repairItem(stack)) {
-            event.getItem().setItemStack(stack);
-        }
+        // getItemStack() mirrors the stack being picked up, so repairing it is enough. Calling
+        // setItemStack() here would swap the ground stack mid-pickup and duplicate or delete items.
+        repairItem(event.getItem().getItemStack());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -787,7 +842,7 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         }
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) {
-            snapshot(online);
+            snapshot(online, true, trusted(online));
         }
         HeadIdentity identity = online != null ? registry.byUuid(online.getUniqueId()) : registry.byName(name);
         if (identity == null) {

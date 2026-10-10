@@ -23,6 +23,7 @@ final class HeadRegistry {
     private final String upsertSql;
     private final Map<UUID, HeadIdentity> byUuid = new ConcurrentHashMap<UUID, HeadIdentity>();
     private final Map<String, HeadIdentity> byName = new ConcurrentHashMap<String, HeadIdentity>();
+    private final Map<String, HeadIdentity> byExactName = new ConcurrentHashMap<String, HeadIdentity>();
 
     HeadRegistry(ServerCore plugin) {
         this.plugin = plugin;
@@ -84,6 +85,7 @@ final class HeadRegistry {
             return;
         }
         byUuid.put(identity.uuid, identity);
+        byExactName.put(identity.name, identity);
         String key = identity.name.toLowerCase(Locale.ROOT);
         HeadIdentity existing = byName.get(key);
         // Case-only or reused names: the most recently seen player wins.
@@ -94,6 +96,11 @@ final class HeadRegistry {
 
     HeadIdentity byName(String name) {
         return name == null ? null : byName.get(name.toLowerCase(Locale.ROOT));
+    }
+
+    /** The player whose exact (case-sensitive) name this is, if any. */
+    HeadIdentity byExactName(String name) {
+        return name == null ? null : byExactName.get(name);
     }
 
     HeadIdentity byUuid(UUID uuid) {
@@ -124,8 +131,9 @@ final class HeadRegistry {
             boolean stale = System.currentTimeMillis() - identity.updated > 24L * 60 * 60 * 1000;
             changed = stale || !name.equals(identity.name) || newClient != identity.client || !same(textures, identity.textures)
                     || !same(signature, identity.signature);
-            if (changed && !name.equalsIgnoreCase(identity.name)) {
+            if (changed && !name.equals(identity.name)) {
                 byName.remove(identity.name.toLowerCase(Locale.ROOT), identity);
+                byExactName.remove(identity.name, identity);
             }
             identity.name = name;
             identity.client = newClient;

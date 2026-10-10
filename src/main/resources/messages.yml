@@ -315,8 +315,8 @@ backup:
 
 headfix:
   inactive: '&cThe head fix is off (head-fix.enabled in config.yml, or the server is missing Mojang''s authlib).'
-  yes: '&aon'
-  no: '&cno'
+  on-text: '&aon'
+  off-text: '&cno'
   status:
     - '&8&m-------&r &6&lHead Fix &8&m-------'
     - '&7Skin source: &f{source} &8| &7Players remembered: &f{remembered}'
@@ -382,7 +382,9 @@ lagguard:
   emergency-end: '&aLag is over (TPS {tps}&a), spawns are back to normal.'
   emergency-on: '&cON'
   emergency-off: '&aoff'
-  off: '&7off'
+  sweep-off: '&7off'
+  sweep-disabled: '&cGround item clearing is turned off in config.yml (lag-guard.item-sweep).'
+  no-safe-spot: '&cNo safe spot to stand in {world} chunk {x}, {z}.'
   chunk-line: '&e#{rank} &f{world} &7chunk &f{x}, {z} &8- &c{count} entities &7({types})'
   chunk-hover: '&eClick to teleport there'
   chunks-header: '&8&m-------&r &6&lBusiest chunks (top {count}) &8&m-------'

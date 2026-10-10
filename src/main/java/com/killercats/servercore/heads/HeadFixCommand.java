@@ -122,7 +122,7 @@ public final class HeadFixCommand extends BaseCommand {
     }
 
     private String yes(boolean value) {
-        return plugin.messages().get(value ? "headfix.yes" : "headfix.no");
+        return plugin.messages().get(value ? "headfix.on-text" : "headfix.off-text");
     }
 
     @SuppressWarnings("deprecation")
@@ -185,7 +185,7 @@ public final class HeadFixCommand extends BaseCommand {
         plugin.messages().sendRaw(player, "headfix.check", "where", where,
                 "name", data.name == null ? "-" : data.name, "id", idText, "textures", texText,
                 "flag", data.eaglerFlag == null ? "-" : data.eaglerFlag,
-                "known", known == null ? plugin.messages().get("headfix.no") : known.name + " (" + known.client.display() + ")",
+                "known", known == null ? plugin.messages().get("headfix.off-text") : known.name + " (" + known.client.display() + ")",
                 "eagler", eagler, "java", java,
                 "repair", plugin.messages().get(broken ? "headfix.repair-yes" : "headfix.repair-no"));
     }
