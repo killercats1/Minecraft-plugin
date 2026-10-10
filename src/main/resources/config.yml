@@ -252,7 +252,7 @@ scoreboard:
   title: '&6&lLILMONKEY SMP'
   disabled-worlds: []
   # Placeholders: {player} {rank} {balance} {bank} {bounty} {lottery} {streak}
-  # {online} {max} {world} {maintenance} and any PlaceholderAPI %placeholder%.
+  # {online} {max} {world} {maintenance} {client} {tps} and any PlaceholderAPI %placeholder%.
   # Max 15 lines, each line max 32 visible characters.
   lines:
     - '&7&m----------------'
@@ -317,6 +317,83 @@ chat-guard:
   blocked-words: []
   # Private-message commands that are also checked for advertising and blocked words.
   check-commands: [msg, tell, w, whisper, m, t, pm, r, reply, mail, me]
+
+# Player head fix for Eaglercraft (EaglercraftX 1.8) players.
+# Eaglercraft only draws a head's skin if the head stores a player UUID. On an offline-mode server
+# heads made from a name usually have none (Steve) or get a stranger's premium skin. ServerCore gives
+# heads of players it knows their real UUID and skin, so they show up for Eaglercraft AND Java players.
+# Decorative heads with a skin URL (HeadDB etc.) also need eagler.host's skin downloads to be on:
+# use /headfix check on such a head to see what Eaglercraft will draw.
+head-fix:
+  enabled: true
+  # auto: Eaglercraft players' heads show their live browser skin (only while they're online, Steve/Alex
+  #       when offline); Java/SkinsRestorer skins on textures.minecraft.net are shown from the URL.
+  # live: always use the live skin by UUID.   url: always use the skin URL (never the browser skin).
+  skin-source: auto
+  # Skin hosts the Eaglercraft gateway downloads from (its default is only textures.minecraft.net).
+  url-hosts: [textures.minecraft.net]
+  # Pre-fill Spigot's head cache so every new head (/skull, menus, other plugins) is fixed instantly.
+  seed-skin-cache: true
+  max-seeded: 1500
+  remember-days: 90
+  max-remembered: 2000
+  resnapshot-minutes: 5
+  reseed-minutes: 20
+  # Re-send a joining Eaglercraft player to other Eaglercraft players (a short tab-list flicker), so a
+  # head they looked at while the player was offline doesn't leave that player looking like Steve.
+  refresh-viewers-on-join: true
+  # Also recognise Eaglercraft players by their client brand.
+  detect-brand: true
+  repair:
+    inventories: true
+    sweep-seconds: 30
+    containers: true
+    dropped-items: true
+    placed-heads: true
+    frames-and-stands: true
+    chunks-per-tick: 4
+    # Give decorative heads that have a skin but no UUID a stable UUID so Eaglercraft can draw them.
+    textured-without-id: true
+    # Also take over heads of names that belong to a premium (Mojang) account with a different UUID.
+    premium-namesakes: false
+  log-repairs: false
+
+# Lag protection for a small host and browser (Eaglercraft) players.
+lag-guard:
+  enabled: true
+  excluded-worlds: []
+  # Clears old items lying on the ground. Never: named/lored items (QualityArmory guns, renamed gear),
+  # banknotes, enchanted items, the keep-materials below, display items, or items near a recent death.
+  item-sweep:
+    enabled: true
+    interval-minutes: 10
+    min-age-seconds: 180
+    warn-seconds: [60, 10, 3]
+    broadcast: true
+    skip-named-or-lored: true
+    skip-enchanted: true
+    keep-materials: [SKULL_ITEM, DIAMOND, DIAMOND_BLOCK, EMERALD, EMERALD_BLOCK, BEACON, NETHER_STAR, DRAGON_EGG, ENCHANTED_BOOK]
+    death-protection-minutes: 5
+    death-protection-radius: 10
+  # Blocks NEW mobs from breeding/spawners/eggs when a chunk already has too many. Existing mobs are never killed.
+  spawn-caps:
+    enabled: true
+    reasons: [BREEDING, SPAWNER, EGG, SPAWNER_EGG, DISPENSE_EGG, BUILD_SNOWMAN, BUILD_IRONGOLEM, SLIME_SPLIT]
+    per-type-per-chunk: 24
+    overrides:
+      CHICKEN: 32
+    animals-per-chunk: 48
+    notify-radius: 8
+  # When TPS stays low: an early item clear, natural mob spawns paused, staff get the laggiest chunks.
+  emergency:
+    enabled: true
+    enter-below: 15.0
+    sustain-seconds: 60
+    exit-above: 18.0
+    early-sweep: true
+    block-natural-spawns: true
+    alert-top-chunks: 5
+    alert-cooldown-minutes: 5
 
 # Automatic backups of the worlds, plugin data and player lists (zip files).
 # They are stored on the same disk as the server: download them now and then from the file manager!

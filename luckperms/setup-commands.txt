@@ -168,6 +168,8 @@ lp group moderator permission set essentials.whois true
 lp group moderator permission set essentials.chat.color true
 lp group moderator permission set openaudiomc.channel.force-join true
 lp group moderator permission set servercore.chatguard.bypass true
+lp group moderator permission set servercore.lagguard.notify true
+lp group moderator permission set servercore.headfix true
 lp group admin setweight 80
 lp group admin setdisplayname Admin
 lp group admin meta setprefix 80 "&c[Admin] &f"
@@ -210,6 +212,8 @@ lp group admin permission set voicechat.admin true
 lp group admin permission set openaudiomc.* true
 lp group admin permission set channels.adminchat true
 lp group admin permission set servercore.backup true
+lp group admin permission set servercore.lagguard true
+lp group admin permission set servercore.headfix.give true
 lp group developer setweight 90
 lp group developer setdisplayname Developer
 lp group developer meta setprefix 90 "&3[Dev] &f"

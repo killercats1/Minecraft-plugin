@@ -136,6 +136,13 @@ public final class ScoreboardManager implements Listener {
                 .replace("{world}", player.getWorld().getName())
                 .replace("{streak}", String.valueOf(data.getDailyStreak()))
                 .replace("{maintenance}", plugin.maintenance().isEnabled() ? "&cON" : "&aOFF");
+        if (out.contains("{client}")) {
+            out = out.replace("{client}", plugin.heads() == null ? "?" : plugin.heads().clientOf(player).display());
+        }
+        if (out.contains("{tps}")) {
+            out = out.replace("{tps}", plugin.lagGuard() == null ? "-"
+                    : com.killercats.servercore.lag.TpsMeter.colored(plugin.lagGuard().meter().tps()[0]));
+        }
         return Text.color(plugin.placeholders().apply(player, out));
     }
 

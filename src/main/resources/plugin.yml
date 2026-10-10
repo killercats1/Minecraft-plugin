@@ -58,6 +58,12 @@ commands:
   ecoadmin:
     description: Economy administration.
     aliases: [economyadmin]
+  headfix:
+    description: Player head fix for Eaglercraft (status, check, fix, give).
+    aliases: [hf, skullfix]
+  lagguard:
+    description: Lag protection (TPS, ground item clearing, busiest chunks).
+    aliases: [lguard]
 
 permissions:
   servercore.*:
@@ -81,6 +87,10 @@ permissions:
       servercore.pay.bypasscooldown: true
       servercore.pay.bypasstoggle: true
       servercore.backup: true
+      servercore.headfix: true
+      servercore.headfix.give: true
+      servercore.lagguard: true
+      servercore.lagguard.notify: true
       servercore.chatguard.bypass: true
       servercore.chatguard.notify: true
   servercore.player:
@@ -115,6 +125,18 @@ permissions:
     default: op
   servercore.backup:
     description: Run /servercore backup and see backup messages.
+    default: op
+  servercore.headfix:
+    description: Use /headfix (status, check, fix, reseed, who).
+    default: op
+  servercore.headfix.give:
+    description: Give yourself fixed player heads with /headfix give.
+    default: op
+  servercore.lagguard:
+    description: Use /lagguard (status, chunks, sweep, tp).
+    default: op
+  servercore.lagguard.notify:
+    description: Get lag alerts with the busiest chunks.
     default: op
   servercore.chatguard.bypass:
     description: Not affected by the chat cooldown, advertising and word filters.
