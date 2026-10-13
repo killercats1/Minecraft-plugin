@@ -88,36 +88,37 @@ pay:
 bank:
   withdraw-fee-percent: 0.0
   transfer-fee-percent: 1.0
+  # Interest is the biggest money printer in the economy (it compounds), so rates are kept low.
   interest:
     enabled: true
-    interval-minutes: 30
+    interval-minutes: 60
     # AFK players don't earn interest.
     require-active: true
     # Max interest per player per payout (0 = unlimited).
-    max-payout: 50000
+    max-payout: 5000
     min-balance: 100
   # Tier 1 is the default. Optional 'permission' locks a tier to a rank.
   tiers:
     - name: '&7Basic'
       cost: 0
       max-balance: 100000
-      interest-percent: 0.25
+      interest-percent: 0.1
     - name: '&fSilver'
       cost: 25000
       max-balance: 500000
-      interest-percent: 0.5
+      interest-percent: 0.15
     - name: '&6Gold'
       cost: 150000
       max-balance: 2500000
-      interest-percent: 0.75
+      interest-percent: 0.2
     - name: '&bDiamond'
       cost: 750000
       max-balance: 10000000
-      interest-percent: 1.0
+      interest-percent: 0.25
     - name: '&5&lElite'
       cost: 3000000
       max-balance: 50000000
-      interest-percent: 1.25
+      interest-percent: 0.3
       permission: servercore.bank.tier.elite
 
 banknotes:
@@ -132,7 +133,8 @@ banknotes:
   min-amount: 10
   max-amount: 10000000
   max-per-command: 16
-  fee-percent: 0.0
+  # Small fee when printing a banknote (money sink).
+  fee-percent: 1.0
 
 sell:
   # Items with custom names or lore can't be sold (protects special items).
@@ -146,7 +148,7 @@ sell:
     # Price never drops below this fraction of the base price.
     min-multiplier: 0.25
     # How fast the market recovers (percent of the sold counter removed every minute).
-    recovery-percent-per-minute: 2.0
+    recovery-percent-per-minute: 0.5
   # Rank sell boosts. Players get the highest multiplier they have permission for.
   multipliers:
     vip:
@@ -163,9 +165,9 @@ daily:
   cooldown-hours: 24
   # Missing a day for longer than this resets the streak.
   streak-reset-hours: 48
-  base-reward: 500
-  streak-bonus-per-day: 100
-  max-streak: 30
+  base-reward: 250
+  streak-bonus-per-day: 50
+  max-streak: 14
   remind-on-join: true
   # servercore.daily.rank.<name> -> reward multiplier
   rank-multipliers:
@@ -174,10 +176,10 @@ daily:
     elite: 2.0
   # Extra reward on exact streak days.
   milestones:
-    7: 5000
-    14: 12500
-    30: 50000
-    100: 250000
+    7: 2500
+    14: 5000
+    30: 15000
+    100: 50000
 
 payday:
   enabled: true
@@ -185,11 +187,11 @@ payday:
   interval-minutes: 60
   # servercore.payday.rank.<name> -> salary. Highest one applies.
   ranks:
-    default: 250
-    vip: 500
-    mvp: 1000
-    elite: 2000
-    staff: 1500
+    default: 150
+    vip: 250
+    mvp: 375
+    elite: 500
+    staff: 300
 
 bounty:
   min-amount: 1000
@@ -237,7 +239,7 @@ auction:
 # Each Minecraft account and each Discord account can only get it once (unlinking/relinking gives nothing).
 discord-link-reward:
   enabled: true
-  money: 100
+  money: 500
   # Extra console commands run with the reward. Placeholders: {player} {uuid} {discordid}
   # Example: 'lp user {player} permission set servercore.sell.multiplier.vip true'
   commands: []
