@@ -182,11 +182,21 @@ public final class HeadFixCommand extends BaseCommand {
                 : data.hasTextures() ? plugin.messages().get("headfix.predict-default")
                 : plugin.messages().get("headfix.predict-java-lookup");
         boolean broken = heads.fixFor(data) != null;
+        String permanent;
+        if (data.id == null) {
+            permanent = plugin.messages().get("headfix.permanent-no-id");
+        } else if (data.eaglerFlag != null) {
+            permanent = plugin.messages().get("headfix.permanent-live");
+        } else if (url != null && heads.isUrlHostAllowed(data.textures)) {
+            permanent = plugin.messages().get("headfix.permanent-yes");
+        } else {
+            permanent = plugin.messages().get("headfix.permanent-default");
+        }
         plugin.messages().sendRaw(player, "headfix.check", "where", where,
                 "name", data.name == null ? "-" : data.name, "id", idText, "textures", texText,
                 "flag", data.eaglerFlag == null ? "-" : data.eaglerFlag,
                 "known", known == null ? plugin.messages().get("headfix.off-text") : known.name + " (" + known.client.display() + ")",
-                "eagler", eagler, "java", java,
+                "eagler", eagler, "java", java, "permanent", permanent,
                 "repair", plugin.messages().get(broken ? "headfix.repair-yes" : "headfix.repair-no"));
     }
 

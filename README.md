@@ -105,7 +105,8 @@ Each Minecraft account **and** each Discord account can only get the reward once
 **The fix:** ServerCore remembers every player who joins: their UUID, their skin (including SkinsRestorer skins) and whether they play on Eaglercraft or Java. It then:
 - fills in Spigot's head cache, so **every new head made from a name is correct instantly**, whichever plugin makes it;
 - repairs **existing** heads in inventories, ender chests, chests, dropped items, item frames, armor stands and placed heads as chunks load;
-- makes heads of Eaglercraft players show their **real browser skin** to other Eaglercraft players (while the owner is online; Steve/Alex when offline). Java players see their SkinsRestorer skin or the default skin.
+- **permanent first:** if a player has their own skin URL (a SkinsRestorer `/skin` skin), all their heads use it, so they show the right skin **even when the owner is offline**, for Eaglercraft and Java players. Heads also update when a player changes their skin.
+- players whose skin only exists in their browser fall back to their **live browser skin**, which Eaglercraft can only get from eagler.host's gateway while they're online (Steve/Alex when offline). No server plugin can store a browser-only skin, so these players get a one-time tip: set a skin with `/skin <premium name>` or `/skin url <link to a png>` to make their head permanent.
 
 Heads that belong to someone else are never touched: premium heads with a different UUID, decorative heads with a custom texture, and Mojang's `MHF_` menu heads.
 

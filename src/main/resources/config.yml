@@ -326,10 +326,18 @@ chat-guard:
 # use /headfix check on such a head to see what Eaglercraft will draw.
 head-fix:
   enabled: true
-  # auto: Eaglercraft players' heads show their live browser skin (only while they're online, Steve/Alex
-  #       when offline); Java/SkinsRestorer skins on textures.minecraft.net are shown from the URL.
-  # live: always use the live skin by UUID.   url: always use the skin URL (never the browser skin).
+  # auto: PERMANENT FIRST - a head uses the owner's own skin URL (e.g. a SkinsRestorer /skin skin), which
+  #       works even when the owner is offline. Only players without one fall back to their live browser
+  #       skin (Eaglercraft can only get that while they're online; Steve/Alex when offline).
+  # live: always the live browser skin.   url: always the skin URL (never the live browser skin).
+  # Note: a browser-only skin can't be made permanent by any server plugin - it only exists in eagler.host's
+  # gateway while the player is online. Players can make theirs permanent with /skin.
   skin-source: auto
+  # Tell players with a browser-only skin (once per restart) how to make their head permanent with /skin.
+  permanent-skin-tip: true
+  # Skin URLs that are not anyone's own skin (e.g. a default skin the gateway gives every Eaglercraft
+  # player). URLs shared by 2+ Eaglercraft players are ignored automatically.
+  ignored-skin-urls: []
   # Skin hosts the Eaglercraft gateway downloads from (its default is only textures.minecraft.net).
   url-hosts: [textures.minecraft.net]
   # Pre-fill Spigot's head cache so every new head (/skull, menus, other plugins) is fixed instantly.

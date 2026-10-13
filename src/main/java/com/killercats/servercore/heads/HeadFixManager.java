@@ -90,6 +90,13 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
     private final LinkedHashSet<String> chunkQueue = new LinkedHashSet<String>();
     private final List<BukkitTask> tasks = new ArrayList<BukkitTask>();
 
+    /** Skin URLs shared by 2+ Eaglercraft players: a gateway default skin, not a personal one. */
+    private Set<String> sharedEaglerUrls = new HashSet<String>();
+    private boolean sharedDirty = true;
+    private final Set<UUID> tipped = Collections.newSetFromMap(new ConcurrentHashMap<UUID, Boolean>());
+    private final Set<String> ignoredUrls = new HashSet<String>();
+    private boolean permanentTip;
+
     private long itemsRepaired;
     private long blocksRepaired;
 
@@ -151,6 +158,14 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         texturedWithoutId = c.getBoolean("repair.textured-without-id", true);
         premiumNamesakes = c.getBoolean("repair.premium-namesakes", false);
         logRepairs = c.getBoolean("log-repairs", false);
+        permanentTip = c.getBoolean("permanent-skin-tip", true);
+        ignoredUrls.clear();
+        for (String url : c.getStringList("ignored-skin-urls")) {
+            if (url != null && !url.trim().isEmpty()) {
+                ignoredUrls.add(url.trim().toLowerCase(Locale.ROOT));
+            }
+        }
+        sharedDirty = true;
     }
 
     /** Called on enable and on /servercore reload. */
@@ -350,6 +365,9 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         }
         boolean changed = registry.update(player.getUniqueId(), player.getName(), detected, textures, signature);
         HeadIdentity identity = registry.byUuid(player.getUniqueId());
+        if (changed) {
+            sharedDirty = true;
+        }
         if (changed && identity != null) {
             seed(identity);
         }
@@ -360,6 +378,12 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         return name != null && name.regionMatches(true, 0, "MHF_", 0, 4);
     }
 
+    /**
+     * isEaglerPlayer=true makes Eaglercraft clients fetch the owner's LIVE browser skin from the gateway
+     * by UUID, which only works while the owner is online. Without it they download the skin URL, which
+     * works forever. So by default (auto) a head uses the owner's own skin URL whenever they have one
+     * (a SkinsRestorer /skin skin), and only falls back to the live skin when there is no such URL.
+     */
     boolean wantsEaglerFlag(HeadIdentity identity) {
         switch (skinSource) {
             case LIVE:
@@ -367,14 +391,55 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
             case URL:
                 return false;
             default:
-                if (identity.client == ClientType.EAGLER) {
-                    return true;
-                }
-                if (identity.client == ClientType.JAVA) {
+                if (hasPermanentSkin(identity)) {
                     return false;
                 }
-                return !usableUrl(identity.textures);
+                return identity.client != ClientType.JAVA;
         }
+    }
+
+    /** True if the player's skin has a URL the gateway can download and that is really theirs. */
+    boolean hasPermanentSkin(HeadIdentity identity) {
+        if (!usableUrl(identity.textures)) {
+            return false;
+        }
+        String url = skinUrl(identity.textures);
+        if (url == null) {
+            return false;
+        }
+        String lower = url.toLowerCase(Locale.ROOT);
+        for (String ignored : ignoredUrls) {
+            if (lower.contains(ignored)) {
+                return false;
+            }
+        }
+        // The Eaglercraft gateway can give every Eaglercraft player the same Java skin; that one is not
+        // the player's own skin, so it must not replace their live browser skin on heads.
+        return identity.client != ClientType.EAGLER || !sharedEaglerUrls().contains(url);
+    }
+
+    private Set<String> sharedEaglerUrls() {
+        if (sharedDirty && registry != null) {
+            Map<String, Integer> counts = new java.util.HashMap<String, Integer>();
+            for (HeadIdentity identity : registry.all()) {
+                if (identity.client == ClientType.EAGLER) {
+                    String url = skinUrl(identity.textures);
+                    if (url != null) {
+                        Integer count = counts.get(url);
+                        counts.put(url, count == null ? 1 : count + 1);
+                    }
+                }
+            }
+            Set<String> shared = new HashSet<String>();
+            for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+                if (entry.getValue() >= 2) {
+                    shared.add(entry.getKey());
+                }
+            }
+            sharedEaglerUrls = shared;
+            sharedDirty = false;
+        }
+        return sharedEaglerUrls;
     }
 
     /** The skin URL inside a textures property, or null. */
@@ -485,7 +550,11 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
                     boolean wantFlag = wantsEaglerFlag(identity);
                     boolean hasFlag = head.eaglerFlag != null;
                     boolean knownSkin = identity.textures != null && !identity.textures.isEmpty();
-                    if (!head.hasTextures() || wantFlag != hasFlag || (placeholder && knownSkin)) {
+                    // Also follow skin changes, so heads always show the owner's current skin. Compare the
+                    // skin URL, not the whole value: Mojang's value contains a timestamp that changes on refresh.
+                    String knownUrl = knownSkin ? skinUrl(identity.textures) : null;
+                    boolean outdated = knownUrl != null && !knownUrl.equals(skinUrl(head.textures));
+                    if (!head.hasTextures() || wantFlag != hasFlag || (placeholder && knownSkin) || outdated) {
                         return build(identity);
                     }
                 }
@@ -716,6 +785,26 @@ public final class HeadFixManager implements Listener, PluginMessageListener {
         if (refreshViewers) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> refreshViewers(player), 20L);
         }
+        if (permanentTip) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> sendPermanentTip(player), 400L);
+        }
+    }
+
+    /**
+     * Players whose head can only show their live browser skin are told once per server start how to
+     * get a permanent head: a SkinsRestorer skin has a URL that works while they're offline too.
+     */
+    private void sendPermanentTip(Player player) {
+        if (!active || !player.isOnline() || skinSource == SkinSource.LIVE || tipped.contains(player.getUniqueId())
+                || !Bukkit.getPluginManager().isPluginEnabled("SkinsRestorer")) {
+            return;
+        }
+        HeadIdentity identity = registry.byUuid(player.getUniqueId());
+        if (identity == null || identity.client == ClientType.JAVA || hasPermanentSkin(identity)) {
+            return;
+        }
+        tipped.add(player.getUniqueId());
+        plugin.messages().send(player, "headfix.permanent-tip");
     }
 
     /**
