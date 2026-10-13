@@ -25,6 +25,7 @@ public enum TransactionType {
     AUCTION_PURCHASE("&cAuction purchase"),
     ADMIN("&dAdmin adjustment"),
     DISCORD_LINK("&9Discord link reward"),
+    VOTE("&bVote reward"),
     ESSENTIALS("&7EssentialsX");
 
     private final String display;

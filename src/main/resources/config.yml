@@ -243,6 +243,27 @@ discord-link-reward:
   commands: []
   broadcast: true
 
+# Vote rewards. Server lists send votes to NuVotifier (install it as a separate plugin), and
+# ServerCore gives the rewards. Votes for offline players are saved and paid when they next join.
+# Test without a real vote: /vote test <player>
+votes:
+  enabled: true
+  # Shown (clickable) in /vote.
+  links:
+    - name: 'TopEaglerServers'
+      url: 'https://topeaglerservers.com/vote/f062fb84'
+  # Money per vote (needs Vault + an economy). 0 = none.
+  money: 250
+  # Extra console commands per vote. Placeholders: {player} {uuid} {service}
+  # Example: 'give {player} diamond 1'
+  commands: []
+  # Tell everyone online when someone votes.
+  broadcast: true
+  # Save votes for offline players and reward them when they join. false = offline votes give nothing.
+  offline-rewards: true
+  # Remind players to vote when they join if they haven't voted in the last 24 hours.
+  remind-on-join: true
+
 # ---------------------------------------------------------------------
 # Other features
 # ---------------------------------------------------------------------

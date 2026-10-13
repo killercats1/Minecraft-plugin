@@ -47,6 +47,9 @@ import com.killercats.servercore.maintenance.MaintenanceCommand;
 import com.killercats.servercore.maintenance.MaintenanceListener;
 import com.killercats.servercore.maintenance.MaintenanceManager;
 import com.killercats.servercore.storage.Database;
+import com.killercats.servercore.vote.VoteCommand;
+import com.killercats.servercore.vote.VoteManager;
+import com.killercats.servercore.vote.VotifierHook;
 import com.killercats.servercore.util.Messages;
 import com.killercats.servercore.util.Money;
 import org.bukkit.Bukkit;
@@ -76,6 +79,7 @@ public final class ServerCore extends JavaPlugin {
     private BackupManager backups;
     private HeadFixManager heads;
     private LagGuard lagGuard;
+    private VoteManager votes;
 
     private EconomyService economy;
     private TransactionLogger transactions;
@@ -136,6 +140,17 @@ public final class ServerCore extends JavaPlugin {
         lagGuard = new LagGuard(this);
         register(lagGuard);
         command("lagguard", new LagGuardCommand(this, lagGuard));
+
+        // Runs without the economy too: command rewards still work, money is skipped until Vault is up.
+        votes = new VoteManager(this);
+        VotifierHook votifier = new VotifierHook(this, votes);
+        register(votes);
+        if (votifier.setup()) {
+            getLogger().info("Hooked into Votifier, vote rewards enabled.");
+        } else {
+            getLogger().warning("Votifier/NuVotifier not found: /vote shows the links but votes can't be received. Install NuVotifier.");
+        }
+        command("vote", new VoteCommand(this, votes, votifier));
 
         if (!setupEconomy()) {
             // Some economy plugins register with Vault late; retry once the server has finished starting.
@@ -345,6 +360,10 @@ public final class ServerCore extends JavaPlugin {
 
     public LagGuard lagGuard() {
         return lagGuard;
+    }
+
+    public VoteManager votes() {
+        return votes;
     }
 
     public BackupManager backups() {
