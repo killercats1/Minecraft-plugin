@@ -133,6 +133,13 @@ public final class Database {
                     + "amount DOUBLE NOT NULL,"
                     + "contributors " + text + ","
                     + "updated BIGINT NOT NULL)");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_head_profiles ("
+                    + "uuid VARCHAR(36) NOT NULL PRIMARY KEY,"
+                    + "name VARCHAR(16) NOT NULL,"
+                    + "client INT NOT NULL DEFAULT 0,"
+                    + "textures " + text + ","
+                    + "signature " + text + ","
+                    + "updated BIGINT NOT NULL)");
             st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_link_rewards ("
                     + "uuid VARCHAR(36) NOT NULL PRIMARY KEY,"
                     + "discord_id VARCHAR(32) NOT NULL UNIQUE,"

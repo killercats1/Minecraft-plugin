@@ -98,6 +98,40 @@ Players who link their Discord account with DiscordSRV (`/discord link`) get a o
 
 Each Minecraft account **and** each Discord account can only get the reward once, so unlinking and relinking, or linking alts to the same Discord, gives nothing. The reward shows up in `/transactions`.
 
+## Player heads on Eaglercraft (`/headfix`)
+
+**The problem:** an Eaglercraft (browser) client only draws a player head's skin if the head stores a player UUID. On an offline-mode server, Spigot fills in a head made from a name (`/skull <name>`, menus, HeadDB's player heads) by asking Mojang. For cracked names that fails, so the head has no UUID and shows Steve. Sometimes it finds a premium account with the same name and shows a stranger's skin.
+
+**The fix:** ServerCore remembers every player who joins: their UUID, their skin (including SkinsRestorer skins) and whether they play on Eaglercraft or Java. It then:
+- fills in Spigot's head cache, so **every new head made from a name is correct instantly**, whichever plugin makes it;
+- repairs **existing** heads in inventories, ender chests, chests, dropped items, item frames, armor stands and placed heads as chunks load;
+- makes heads of Eaglercraft players show their **real browser skin** to other Eaglercraft players (while the owner is online; Steve/Alex when offline). Java players see their SkinsRestorer skin or the default skin.
+
+Heads that belong to someone else are never touched: premium heads with a different UUID, decorative heads with a custom texture, and Mojang's `MHF_` menu heads.
+
+| Command | What it does |
+|---|---|
+| `/headfix status` | Whether the fix is active and what it detected |
+| `/headfix check` | Inspect the held or targeted head: who it belongs to, and what Eaglercraft and Java will draw |
+| `/headfix fix [hand\|inv\|area <chunks>]` | Repair heads right now |
+| `/headfix give <player> [amount]` | Get a correct head of a player |
+| `/headfix who` | Who is on Eaglercraft and who is on Java |
+
+**What it can't fix:** decorative heads with a skin URL (HeadDB etc.) are downloaded for Eaglercraft players by eagler.host's gateway, and no server plugin can reach that. If `/headfix check` says "skin from the URL" but the head still shows Steve on Eaglercraft, eagler.host's skin downloads are off.
+
+Settings are under `head-fix` in `config.yml`. `skin-source: url` makes heads always use the skin URL instead of the live browser skin.
+
+## Lag Guard (`/lagguard`)
+
+Keeps the server smooth on a small host with browser players:
+- **Ground item clearing** every 10 minutes, with warnings at 60, 10 and 3 seconds. It never removes named or lored items (QualityArmory guns, renamed gear), banknotes, enchanted items, heads, diamonds and other valuables, display items, items dropped in the last 3 minutes, or anything near a recent death.
+- **Spawn caps:** no more mobs from breeding, spawners or eggs once a chunk has 24 of that mob (32 chickens) or 48 animals. Existing mobs are never killed. Spawns from other plugins are never capped.
+- **Emergency mode:** if TPS stays below 15 for a minute, items are cleared early, natural mob spawning pauses, and staff get the busiest chunks. Admins can click a chunk to teleport there safely. It switches off again once TPS is back above 18.
+- `/lagguard status` shows TPS, memory and entities; `/lagguard chunks` shows the busiest chunks; `/lagguard sweep [now]` clears items.
+- New scoreboard placeholders: `{tps}` and `{client}` (Eaglercraft or Java).
+
+Settings are under `lag-guard` in `config.yml`.
+
 ## Backups
 
 ServerCore zips the worlds, important plugin folders (ServerCore, LuckPerms, Essentials, DiscordSRV, LoginSecurity, Jobs, ...) and the server's ops/whitelist/ban lists every 12 hours. They go into the `backups/` folder in the main server directory, and only the newest 2 are kept.

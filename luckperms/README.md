@@ -12,8 +12,8 @@ This sets up a full rank ladder for the server: permissions for **ServerCore**, 
 | `elite` | 30 | mvp | `[Elite]` | x1.5 sell price, x2 daily reward, $2000 payday, 25 auction listings, **Elite bank tier**, no auction fees, `elite` kit, /heal, /fly |
 | `builder` | 40 | default | `[Builder]` | Joins during maintenance, gamemode, fly, speed, time/weather, teleport, WorldEdit |
 | `helper` | 50 | default | `[Helper]` | Joins during maintenance, staff chat, maintenance join alerts, /helpop alerts, kick, mute, $1500 staff payday, voice chat groups |
-| `moderator` | 60 | helper | `[Mod]` | Tempban/unban, jail, vanish, socialspy, invsee, teleport, other players' transactions, banknote dupe alerts and lookup, cancel auction listings |
-| `admin` | 80 | moderator | `[Admin]` | Maintenance control, /ecoadmin, /ecostats, permanent bans, /give, /eco, warps/spawn setup, all kits, `/servercore reload`, WorldEdit, voice chat connection tests (`voicechat.admin`) |
+| `moderator` | 60 | helper | `[Mod]` | Tempban/unban, jail, vanish, socialspy, invsee, teleport, other players' transactions, banknote dupe alerts and lookup, cancel auction listings, lag alerts, `/headfix` |
+| `admin` | 80 | moderator | `[Admin]` | Maintenance control, /ecoadmin, /ecostats, permanent bans, /give, /eco, warps/spawn setup, all kits, `/servercore reload`, WorldEdit, voice chat connection tests (`voicechat.admin`), `/lagguard`, `/headfix give`, backups |
 | `developer` | 90 | admin | `[Dev]` | Full LuckPerms access |
 | `owner` | 100 | developer | `[Owner]` | Everything (`*`) |
 

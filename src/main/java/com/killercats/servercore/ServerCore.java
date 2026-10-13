@@ -35,6 +35,10 @@ import com.killercats.servercore.features.ChatGuard;
 import com.killercats.servercore.features.ScoreboardManager;
 import com.killercats.servercore.features.StaffChat;
 import com.killercats.servercore.gui.MenuListener;
+import com.killercats.servercore.heads.HeadFixCommand;
+import com.killercats.servercore.heads.HeadFixManager;
+import com.killercats.servercore.lag.LagGuard;
+import com.killercats.servercore.lag.LagGuardCommand;
 import com.killercats.servercore.hook.EssentialsBalanceListener;
 import com.killercats.servercore.hook.EssentialsHook;
 import com.killercats.servercore.hook.PlaceholderHook;
@@ -70,6 +74,8 @@ public final class ServerCore extends JavaPlugin {
     private Announcer announcer;
     private ChatGuard chatGuard;
     private BackupManager backups;
+    private HeadFixManager heads;
+    private LagGuard lagGuard;
 
     private EconomyService economy;
     private TransactionLogger transactions;
@@ -122,6 +128,14 @@ public final class ServerCore extends JavaPlugin {
         command("maintenance", new MaintenanceCommand(this));
         command("staffchat", staffChat);
         command("scoreboard", new ServerCoreCommand.Scoreboard(this));
+
+        heads = new HeadFixManager(this);
+        register(heads);
+        heads.start();
+        command("headfix", new HeadFixCommand(this, heads));
+        lagGuard = new LagGuard(this);
+        register(lagGuard);
+        command("lagguard", new LagGuardCommand(this, lagGuard));
 
         if (!setupEconomy()) {
             // Some economy plugins register with Vault late; retry once the server has finished starting.
@@ -195,6 +209,12 @@ public final class ServerCore extends JavaPlugin {
         if (backups != null) {
             backups.shutdown();
         }
+        if (heads != null) {
+            heads.shutdown();
+        }
+        if (lagGuard != null) {
+            lagGuard.shutdown();
+        }
         if (maintenance != null) {
             maintenance.shutdown();
         }
@@ -244,6 +264,8 @@ public final class ServerCore extends JavaPlugin {
         announcer.reload();
         chatGuard.reload();
         backups.reload();
+        heads.start();
+        lagGuard.reload();
         if (economy != null) {
             transactions.reload();
             bank.reload();
@@ -315,6 +337,14 @@ public final class ServerCore extends JavaPlugin {
 
     public ScoreboardManager scoreboards() {
         return scoreboards;
+    }
+
+    public HeadFixManager heads() {
+        return heads;
+    }
+
+    public LagGuard lagGuard() {
+        return lagGuard;
     }
 
     public BackupManager backups() {
