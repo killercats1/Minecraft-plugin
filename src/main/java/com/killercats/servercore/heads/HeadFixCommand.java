@@ -111,8 +111,15 @@ public final class HeadFixCommand extends BaseCommand {
                 offlineUuid++;
             }
         }
+        int chosen = 0;
+        for (HeadIdentity identity : heads.registry().all()) {
+            if (heads.hasPermanentSkin(identity)) {
+                chosen++;
+            }
+        }
         plugin.messages().sendRaw(sender, "headfix.status",
                 "source", heads.skinSource().name().toLowerCase(Locale.ROOT),
+                "skinsrestorer", yes(heads.skinsRestorerAvailable()), "chosen", chosen,
                 "remembered", heads.registry().size(),
                 "items", yes(r.canEditItems()), "blocks", yes(r.canEditBlocks()), "seeding", yes(heads.seeding()),
                 "flag_true", flagTrue, "flag_other", flagOther, "flag_none", flagNone,
@@ -186,7 +193,8 @@ public final class HeadFixCommand extends BaseCommand {
         if (data.id == null) {
             permanent = plugin.messages().get("headfix.permanent-no-id");
         } else if (data.eaglerFlag != null) {
-            permanent = plugin.messages().get("headfix.permanent-live");
+            permanent = plugin.messages().get("headfix.permanent-live")
+                    + (heads.canChooseSkins() ? plugin.messages().get("headfix.permanent-live-hint") : "");
         } else if (url != null && heads.isUrlHostAllowed(data.textures)) {
             permanent = plugin.messages().get("headfix.permanent-yes");
         } else {
@@ -195,7 +203,8 @@ public final class HeadFixCommand extends BaseCommand {
         plugin.messages().sendRaw(player, "headfix.check", "where", where,
                 "name", data.name == null ? "-" : data.name, "id", idText, "textures", texText,
                 "flag", data.eaglerFlag == null ? "-" : data.eaglerFlag,
-                "known", known == null ? plugin.messages().get("headfix.off-text") : known.name + " (" + known.client.display() + ")",
+                "known", known == null ? plugin.messages().get("headfix.off-text") : known.name + " (" + known.client.display()
+                        + (known.chosen ? ", " + plugin.messages().get("headfix.chosen-text") : "") + ")",
                 "eagler", eagler, "java", java, "permanent", permanent,
                 "repair", plugin.messages().get(broken ? "headfix.repair-yes" : "headfix.repair-no"));
     }

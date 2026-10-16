@@ -326,18 +326,17 @@ chat-guard:
 # use /headfix check on such a head to see what Eaglercraft will draw.
 head-fix:
   enabled: true
-  # auto: PERMANENT FIRST - a head uses the owner's own skin URL (e.g. a SkinsRestorer /skin skin), which
-  #       works even when the owner is offline. Only players without one fall back to their live browser
-  #       skin (Eaglercraft can only get that while they're online; Steve/Alex when offline).
+  # auto: PERMANENT FIRST - if the owner chose a skin with SkinsRestorer's /skin, their heads show that
+  #       skin, also while they're offline. Eaglercraft players without one get their live browser skin
+  #       (Eaglercraft can only get that while they're online; Steve/Alex when offline). Skins SkinsRestorer
+  #       picks by itself (the premium player with the same name, default skins) don't count.
   # live: always the live browser skin.   url: always the skin URL (never the live browser skin).
   # Note: a browser-only skin can't be made permanent by any server plugin - it only exists in eagler.host's
-  # gateway while the player is online. Players can make theirs permanent with /skin.
+  # gateway while the player is online. Players can make theirs permanent with /skin (needs SkinsRestorer 15+).
   skin-source: auto
-  # Tell players with a browser-only skin (once per restart) how to make their head permanent with /skin.
+  # Tell Eaglercraft players with a browser-only skin (once per restart) how to make their head permanent
+  # with /skin. Only with skin-source: auto and SkinsRestorer installed.
   permanent-skin-tip: true
-  # Skin URLs that are not anyone's own skin (e.g. a default skin the gateway gives every Eaglercraft
-  # player). URLs shared by 2+ Eaglercraft players are ignored automatically.
-  ignored-skin-urls: []
   # Skin hosts the Eaglercraft gateway downloads from (its default is only textures.minecraft.net).
   url-hosts: [textures.minecraft.net]
   # Pre-fill Spigot's head cache so every new head (/skull, menus, other plugins) is fixed instantly.

@@ -4,7 +4,7 @@ main: com.killercats.servercore.ServerCore
 description: ${project.description}
 author: killercats1
 website: https://github.com/killercats1/Minecraft-plugin
-softdepend: [Vault, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions]
+softdepend: [Vault, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions, SkinsRestorer]
 
 commands:
   servercore:

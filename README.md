@@ -105,8 +105,9 @@ Each Minecraft account **and** each Discord account can only get the reward once
 **The fix:** ServerCore remembers every player who joins: their UUID, their skin (including SkinsRestorer skins) and whether they play on Eaglercraft or Java. It then:
 - fills in Spigot's head cache, so **every new head made from a name is correct instantly**, whichever plugin makes it;
 - repairs **existing** heads in inventories, ender chests, chests, dropped items, item frames, armor stands and placed heads as chunks load;
-- **permanent first:** if a player has their own skin URL (a SkinsRestorer `/skin` skin), all their heads use it, so they show the right skin **even when the owner is offline**, for Eaglercraft and Java players. Heads also update when a player changes their skin.
-- players whose skin only exists in their browser fall back to their **live browser skin**, which Eaglercraft can only get from eagler.host's gateway while they're online (Steve/Alex when offline). No server plugin can store a browser-only skin, so these players get a one-time tip: set a skin with `/skin <premium name>` or `/skin url <link to a png>` to make their head permanent.
+- **permanent first:** if a player chose a skin with SkinsRestorer's `/skin`, all their heads show that skin, **even when the owner is offline**, for Eaglercraft and Java players. Heads update when they pick another skin. Skins SkinsRestorer gives out by itself (the premium player with the same name, default skins) don't count, because they aren't the player's own.
+- Eaglercraft players without a `/skin` skin get their **live browser skin**, which Eaglercraft can only get from eagler.host's gateway while they're online (Steve/Alex when offline). No server plugin can store a browser-only skin, so these players get a one-time tip: set a skin with `/skin <premium name>` or `/skin url <link to a png>` to make their head permanent. Their body keeps showing their browser skin to other Eaglercraft players; only heads use the `/skin` skin.
+- permanent heads and the tip need **SkinsRestorer 15 or newer**. Without it, Eaglercraft heads always use the live browser skin.
 
 Heads that belong to someone else are never touched: premium heads with a different UUID, decorative heads with a custom texture, and Mojang's `MHF_` menu heads.
 

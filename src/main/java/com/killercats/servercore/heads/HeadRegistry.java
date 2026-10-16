@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 final class HeadRegistry {
 
-    private static final String[] COLUMNS = {"uuid", "name", "client", "textures", "signature", "updated"};
+    private static final String[] COLUMNS = {"uuid", "name", "client", "textures", "signature", "chosen", "updated"};
 
     private final ServerCore plugin;
     private final String upsertSql;
@@ -34,13 +34,14 @@ final class HeadRegistry {
     void load(int rememberDays, int maxRemembered) {
         long since = System.currentTimeMillis() - rememberDays * 24L * 60 * 60 * 1000;
         try {
-            List<HeadIdentity> stored = plugin.database().query("SELECT uuid, name, client, textures, signature, updated FROM sc_head_profiles"
+            List<HeadIdentity> stored = plugin.database().query("SELECT uuid, name, client, textures, signature, chosen, updated FROM sc_head_profiles"
                     + " WHERE updated >= ? ORDER BY updated DESC LIMIT " + maxRemembered, rs -> {
                 List<HeadIdentity> list = new ArrayList<HeadIdentity>();
                 while (rs.next()) {
                     try {
                         list.add(new HeadIdentity(UUID.fromString(rs.getString("uuid")), rs.getString("name"),
-                                ClientType.fromId(rs.getInt("client")), rs.getString("textures"), rs.getString("signature"), rs.getLong("updated")));
+                                ClientType.fromId(rs.getInt("client")), rs.getString("textures"), rs.getString("signature"), rs.getInt("chosen") != 0,
+                                rs.getLong("updated")));
                     } catch (IllegalArgumentException ignored) {
                         // bad uuid
                     }
@@ -58,7 +59,7 @@ final class HeadRegistry {
                     while (rs.next()) {
                         try {
                             list.add(new HeadIdentity(UUID.fromString(rs.getString("uuid")), rs.getString("name"), ClientType.UNKNOWN,
-                                    null, null, rs.getLong("last_seen")));
+                                    null, null, false, rs.getLong("last_seen")));
                         } catch (IllegalArgumentException ignored) {
                             // bad uuid
                         }
@@ -131,18 +132,18 @@ final class HeadRegistry {
      * Records the latest information about an online player. Returns the identity and whether
      * anything changed (so callers can re-seed only when needed).
      */
-    boolean update(UUID uuid, String name, ClientType client, String textures, String signature) {
+    boolean update(UUID uuid, String name, ClientType client, String textures, String signature, boolean chosen) {
         HeadIdentity identity = byUuid.get(uuid);
         boolean changed;
         if (identity == null) {
-            identity = new HeadIdentity(uuid, name, client, textures, signature, System.currentTimeMillis());
+            identity = new HeadIdentity(uuid, name, client, textures, signature, chosen, System.currentTimeMillis());
             changed = true;
         } else {
             ClientType newClient = client == ClientType.UNKNOWN ? identity.client : client;
             // Also re-save once a day so regularly playing players never age out of remember-days.
             boolean stale = System.currentTimeMillis() - identity.updated > 24L * 60 * 60 * 1000;
             changed = stale || !name.equals(identity.name) || newClient != identity.client || !same(textures, identity.textures)
-                    || !same(signature, identity.signature);
+                    || !same(signature, identity.signature) || chosen != identity.chosen;
             if (changed && !name.equals(identity.name)) {
                 byName.remove(identity.name.toLowerCase(Locale.ROOT), identity);
                 byExactName.remove(identity.name, identity);
@@ -151,6 +152,7 @@ final class HeadRegistry {
             identity.client = newClient;
             identity.textures = textures;
             identity.signature = signature;
+            identity.chosen = chosen;
             identity.updated = System.currentTimeMillis();
         }
         add(identity);
@@ -162,7 +164,7 @@ final class HeadRegistry {
 
     void save(HeadIdentity identity) {
         plugin.database().update(upsertSql, identity.uuid.toString(), identity.name, identity.client.id(), identity.textures,
-                identity.signature, identity.updated);
+                identity.signature, identity.chosen ? 1 : 0, identity.updated);
     }
 
     private static boolean same(String a, String b) {

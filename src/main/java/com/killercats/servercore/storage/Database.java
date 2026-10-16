@@ -139,7 +139,9 @@ public final class Database {
                     + "client INT NOT NULL DEFAULT 0,"
                     + "textures " + text + ","
                     + "signature " + text + ","
+                    + "chosen INT NOT NULL DEFAULT 0,"
                     + "updated BIGINT NOT NULL)");
+            addColumn(st, "sc_head_profiles", "chosen", "INT NOT NULL DEFAULT 0");
             st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_link_rewards ("
                     + "uuid VARCHAR(36) NOT NULL PRIMARY KEY,"
                     + "discord_id VARCHAR(32) NOT NULL UNIQUE,"
@@ -148,6 +150,19 @@ public final class Database {
             if (!mysql) {
                 st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_tx_player ON sc_transactions (player, created)");
             }
+        }
+    }
+
+    /** Adds a column that newer versions need to a table made by an older version. */
+    private void addColumn(Statement st, String table, String column, String definition) throws SQLException {
+        boolean exists;
+        try (ResultSet rs = st.executeQuery("SELECT " + column + " FROM " + table + " LIMIT 1")) {
+            exists = rs.getMetaData().getColumnCount() > 0;
+        } catch (SQLException missing) {
+            exists = false;
+        }
+        if (!exists) {
+            st.executeUpdate("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
         }
     }
 

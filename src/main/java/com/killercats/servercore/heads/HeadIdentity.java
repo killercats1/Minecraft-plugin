@@ -10,14 +10,17 @@ final class HeadIdentity {
     volatile ClientType client;
     volatile String textures;
     volatile String signature;
+    /** The textures are a skin the player chose with SkinsRestorer's /skin (really theirs, so permanent). */
+    volatile boolean chosen;
     volatile long updated;
 
-    HeadIdentity(UUID uuid, String name, ClientType client, String textures, String signature, long updated) {
+    HeadIdentity(UUID uuid, String name, ClientType client, String textures, String signature, boolean chosen, long updated) {
         this.uuid = uuid;
         this.name = name;
         this.client = client;
         this.textures = textures;
         this.signature = signature;
+        this.chosen = chosen;
         this.updated = updated;
     }
 }
