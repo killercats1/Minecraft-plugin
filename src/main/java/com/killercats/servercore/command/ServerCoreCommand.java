@@ -57,6 +57,18 @@ public final class ServerCoreCommand extends BaseCommand {
             linkReward.claim(sender, args[1], args[2]);
             return;
         }
+        if (args.length > 0 && args[0].equalsIgnoreCase("check")) {
+            requirePermission(sender, "servercore.admin");
+            plugin.security().report(sender);
+            return;
+        }
+        if (args.length > 0 && args[0].equalsIgnoreCase("setspawnprotection")) {
+            requirePermission(sender, "servercore.admin");
+            org.bukkit.entity.Player player = requirePlayer(sender);
+            plugin.spawnProtection().setCentre(player.getLocation());
+            msg(sender, "spawnprotection.center-set", "radius", plugin.getConfig().getInt("spawn-protection.radius", 32));
+            return;
+        }
         if (args.length > 0 && args[0].equalsIgnoreCase("version")) {
             msg(sender, "general.version", "version", plugin.getDescription().getVersion(),
                     "economy", plugin.economyReady() ? plugin.economy().providerName() : "none",
@@ -68,7 +80,7 @@ public final class ServerCoreCommand extends BaseCommand {
 
     @Override
     protected List<String> complete(CommandSender sender, String[] args) {
-        return args.length == 1 ? list("help", "reload", "version", "backup", "setupranks") : list();
+        return args.length == 1 ? list("help", "reload", "version", "backup", "check", "setspawnprotection", "setupranks") : list();
     }
 
     /** /scoreboard - toggles the sidebar. */

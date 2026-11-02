@@ -14,6 +14,12 @@ The core plugin for **LilMonkeySMP** (`lilmonkeysmp.eagler.host`): an all-in-one
 | [EssentialsX](https://essentialsx.net/) (2.19/2.20 for 1.8.8) | **Yes** (for economy) | Stores wallet balances (`/bal`, `/baltop`, `/eco` keep working) |
 | A permissions plugin (LuckPerms, PermissionsEx, GroupManager, ...) | Recommended | Lets maintenance mode check **ranks** |
 | PlaceholderAPI | Optional | `%placeholders%` in the scoreboard and announcer |
+| [LoginSecurity](https://www.spigotmc.org/resources/loginsecurity.19362/) or AuthMe | **Yes** on Eaglercraft | Without one, anyone can join with your name. ServerCore locks staff accounts until one runs (see [Server check](#server-check-and-login-protection)) |
+| [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/) (an older release that supports 1.8) | Recommended | Land claims with a golden shovel |
+| [CoreProtect](https://www.spigotmc.org/resources/coreprotect.8631/) (an older release that supports 1.8) | Recommended | Block logs and rollbacks |
+| [NoCheatPlus](https://ci.codemc.io/job/Updated-NoCheatPlus/job/Updated-NoCheatPlus/) | Recommended | Anti-cheat |
+| NuVotifier | Optional | Receives votes for `/vote` |
+| Tebex | Optional | Web store, see [Store](#store-tebex) |
 
 Without Vault/EssentialsX the economy commands are disabled, but maintenance mode, the scoreboard, the announcer and staff chat still work.
 
@@ -158,6 +164,38 @@ ServerCore zips the worlds, important plugin folders (ServerCore, LuckPerms, Ess
 
 Settings are under `backups` in `config.yml`.
 
+### Off-site backups (Discord)
+
+Backups on the server's disk die with the server. ServerCore can send every backup to a private Discord channel too:
+
+1. In Discord, make a channel only you (or admins) can see. Open its settings > **Integrations** > **Webhooks** > **New Webhook** > **Copy Webhook URL**.
+2. Paste it as `backups.discord.webhook-url` in `config.yml` and run `/servercore reload`.
+3. Run `/servercore backup` to test it.
+
+Discord allows 10 MB per file, so bigger backups are split into numbered parts (`backup-....zip.001`, `.002`, ...). To restore, download every part into one folder and open the `.001` file with [7-Zip](https://www.7-zip.org/) (or run `cat backup.zip.* > backup.zip`). Backups over `max-upload-mb` (250 MB) aren't uploaded; Discord gets a notice instead. The upload runs in the background after world saving has resumed.
+
+## Server check and login protection
+
+`/servercore check` shows whether a login plugin is running and which recommended plugins are installed (Vault, EssentialsX, LuckPerms, GriefPrevention, CoreProtect, NoCheatPlus, NuVotifier, DiscordSRV, Tebex). The console prints the same warnings at startup.
+
+Eaglercraft servers run in offline mode, so **without a login plugin anyone can join with your name**. If ServerCore can't find one (LoginSecurity, AuthMe, nLogin, JPremium, ...), it **locks staff accounts**: ops and anyone with `servercore.staff` or `servercore.maintenance.bypass` can't join until a login plugin is installed. Normal players can still join. Settings are under `security.login-check`:
+- `mode: warn` lets staff join with a warning instead, `mode: off` turns the check off.
+- If players log in on the proxy (EaglerXServer auth on BungeeCord), set `auth-on-proxy: true`.
+
+## Grief protection and anti-cheat
+
+These are separate plugins; ServerCore's rank setup already gives staff their permissions. Put the jars in `plugins/`, restart, then run `servercore setupranks` in the console to add the new permissions.
+
+| Plugin | What players do | What staff do |
+|---|---|---|
+| **GriefPrevention** | Get a golden shovel and right-click two corners to claim land. `/trust <player>` lets friends build. Claim blocks grow with playtime. | Mods: `/ignoreclaims`, `/deleteclaim`, `/claimslist <player>`. Admins: `/adminclaims`, `/adjustbonusclaimblocks`, `/transferclaim`. |
+| **CoreProtect** | - | Helpers: `/co i` (click a block to see who changed it), `/co lookup`. Mods: `/co rollback u:<player> t:1d r:20`, `/co restore`. |
+| **NoCheatPlus** | - | Helpers see cheat alerts (`/ncp notify` toggles them). Mods: `/ncp info <player>`, `/ncp inspect <player>`. |
+
+- GriefPrevention's claim data (`GriefPreventionData`) and NoCheatPlus's config are in the backups. CoreProtect's database is left out on purpose because it gets very big.
+- Eaglercraft players lag a bit more than Java players. If NoCheatPlus flags normal movement, raise the lag compensation in its `config.yml` instead of turning checks off.
+- Pair NoCheatPlus alerts with `/punish <player>` (the **Hacking** button).
+
 ## Chat prefixes
 
 ServerCore formats chat with each player's LuckPerms rank prefix, for example `[Owner] Killercats2154: hi`. It reads the prefix through Vault, so LuckPerms and Vault must be installed.
@@ -179,9 +217,73 @@ ServerCore formats chat with each player's LuckPerms rank prefix, for example `[
 
 Settings are under `chat-guard` in `config.yml`.
 
+## Punishments
+
+| Command | Who | What it does |
+|---|---|---|
+| `/punish <player>` | helper+ | Menu with preset reasons (hacking, x-ray, griefing, spam, toxicity, advertising, bad name/build, ban evasion). Each shows how many times the player did it before and what they get this time. |
+| `/punish <player> <preset> [note]` | helper+ | Same as clicking the button (works from the console) |
+| `/punish <player> warn\|kick\|mute\|tempban\|ban [time\|perm] <reason>` | by rank | Manual punishment, e.g. `/punish Steve tempban 3d Griefing at spawn` |
+| `/warn <player> <reason>` | helper+ | Warning |
+| `/unpunish <player> ban\|mute [note]` | mod+ (unmute), admin (unban) | Lift a ban or mute |
+| `/phistory <player> [page]` | helper+ | Every punishment, who gave it, and whether it's still active |
+| `/alts <player>` | mod+ | Other accounts that joined from the same IP; banned ones in red |
+
+- **Escalation:** each preset has steps, e.g. hacking is 7 days, then 30 days, then permanent. Edit them under `punishments.presets`.
+- **Who can give what:** helpers warn, kick and mute, moderators tempban, admins ban permanently. Buttons a rank can't use show a barrier.
+- **Ban evasion:** when someone joins from the same IP as a banned account, staff get an alert. Set `ban-evasion: block` to stop them joining. Shared proxy addresses are ignored.
+- Mutes block chat and private messages (`muted-blocked-commands`).
+- Paste a Discord webhook URL in `punishments.discord-webhook-url` to log every punishment to a staff channel.
+- Use `/punish` instead of EssentialsX's `/ban`, `/tempban` and `/mute`, so everything shows in the history.
+
+## Spawn protection
+
+No building, breaking, fire, explosions, PvP or damage within 48 blocks of spawn, without WorldGuard. Builders and admins (`servercore.spawnprotection.bypass`) can still build. Stand where the centre should be and run `/servercore setspawnprotection` to move it. Settings are under `spawn-protection`.
+
+## Rules
+
+New players see the rules and a clickable **[ACCEPT]** button. Until they accept (or type `/rules accept`), they can't move, chat, or use commands other than login commands. `/rules` shows them any time. Change the rules under `rules.lines`, and raise `rules.version` to make everyone accept again. ServerCore's `/rules` replaces EssentialsX's.
+
+## Combat-log protection
+
+Hitting or being hit by a player puts both in combat for 15 seconds. In combat you can't use `/spawn`, `/home`, `/tpa`, `/warp`, `/back`, `/fly` and similar commands, and flying stops. **Logging out in combat kills you**, so your items drop. Staff kicks and bans don't count. The scoreboard can show it with `{combat}`. Settings are under `combat-tag`.
+
+## Crates and keys
+
+Keys are stored in the database, so they can't be duplicated or faked, and they can be given to offline players.
+
+| Command | What it does |
+|---|---|
+| `/crate` | Your crates and keys. Left-click opens, right-click shows the rewards. |
+| `/crate open\|preview <crate>` | Open a crate or see its rewards and chances |
+| `/crate givekey <player\|all> <crate> [amount]` | Give keys (admin or console: votes, store, events) |
+| `/crate takekey <player> <crate> [amount]` | Take keys away |
+| `/crate set <crate>` / `/crate remove` | Turn the block you look at into a crate (right-click to open, left-click for rewards), or remove it |
+
+Three crates come ready: **Vote** (money, iron, food, diamonds, a chance at a Rare key), **Rare** and **Legendary** (enchanted gear, god apples). Change them under `crates.types`.
+
+**Give a Vote key for every vote:** new installs do this already. On an existing server, change `votes.commands` in `config.yml` to:
+```yaml
+  commands: ['crate givekey {player} vote 1']
+```
+
+## Store (Tebex)
+
+1. Make a free store at [tebex.io](https://www.tebex.io/), choose Minecraft (Java), and install the Tebex plugin (if it doesn't load on 1.8.8, use the older BuycraftX plugin). Run `/tebex secret <key>` in the console.
+2. Put the store link in `store.url` in ServerCore's `config.yml`. Players open it with `/store` (or `/buy`, `/donate`).
+3. Package commands to use in Tebex (run when the player is online or offline):
+
+| Package | Command |
+|---|---|
+| VIP / MVP / Elite rank | `lp user {username} parent add vip` (or `mvp`, `elite`) |
+| Crate keys | `crate givekey {username} legendary 3` |
+| Money | `eco give {username} 10000` |
+
+Tebex has to follow Minecraft's EULA: sell cosmetics, ranks with convenience perks and keys, but not gameplay advantages that only paying players can get.
+
 ## Other features
 
-- **Scoreboard**: flicker-free sidebar with `{rank}`, `{balance}`, `{bank}`, `{bounty}`, `{lottery}`, `{streak}`, `{online}` and PlaceholderAPI. `/scoreboard` toggles it per player.
+- **Scoreboard**: flicker-free sidebar with `{rank}`, `{balance}`, `{bank}`, `{bounty}`, `{lottery}`, `{streak}`, `{online}`, `{combat}` and PlaceholderAPI. `/scoreboard` toggles it per player.
 - **Announcer**: rotating or random broadcasts.
 - **Staff chat**: `/sc <message>` or `/sc` to toggle.
 
@@ -199,7 +301,10 @@ Give these to your ranks in your permissions plugin. They only count when **expl
 | `servercore.bank.tier.elite` | Unlock the Elite bank tier |
 | `servercore.pay.notax`, `servercore.bank.nofee`, `servercore.auction.nofee`, `servercore.banknote.nofee` | Fee exemptions |
 | `servercore.bounty.exempt` | Cannot receive bounties |
+| `servercore.punish.exempt` | Cannot be punished by other players |
+| `servercore.rules.exempt` | Never asked to accept the rules |
+| `servercore.combattag.bypass` | Never combat tagged |
 
-Staff permissions (`default: op`): `servercore.maintenance`, `servercore.maintenance.notify`, `servercore.staffchat`, `servercore.ecoadmin`, `servercore.ecostats`, `servercore.transactions.others`, `servercore.banknote.lookup`, `servercore.banknote.alerts`, `servercore.bounty.admin`, `servercore.lottery.admin`, `servercore.auction.admin`, `servercore.admin`. `servercore.*` grants everything.
+Staff permissions (`default: op`): `servercore.staff`, `servercore.punish`, `servercore.punish.mute`, `servercore.punish.tempban`, `servercore.punish.ban`, `servercore.punish.unban`, `servercore.punish.unmute`, `servercore.punish.history`, `servercore.punish.alts`, `servercore.punish.notify`, `servercore.spawnprotection.bypass`, `servercore.crate.admin`, `servercore.maintenance`, `servercore.maintenance.notify`, `servercore.staffchat`, `servercore.ecoadmin`, `servercore.ecostats`, `servercore.transactions.others`, `servercore.banknote.lookup`, `servercore.banknote.alerts`, `servercore.bounty.admin`, `servercore.lottery.admin`, `servercore.auction.admin`, `servercore.admin`. `servercore.*` grants everything.
 
 All normal player features are in `servercore.player` (given to everyone by default).

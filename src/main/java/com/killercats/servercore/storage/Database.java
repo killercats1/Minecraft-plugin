@@ -154,7 +154,47 @@ public final class Database {
                     + "delivered INT NOT NULL DEFAULT 0"
                     + (mysql ? ", INDEX idx_sc_votes_name (name_lower), INDEX idx_sc_votes_created (created)" : "")
                     + ")");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_punishments ("
+                    + "id " + autoId + ","
+                    + "type VARCHAR(16) NOT NULL,"
+                    + "uuid VARCHAR(36) NOT NULL,"
+                    + "name VARCHAR(16) NOT NULL,"
+                    + "ip VARCHAR(64),"
+                    + "reason VARCHAR(255) NOT NULL,"
+                    + "preset VARCHAR(32),"
+                    + "staff VARCHAR(36),"
+                    + "staff_name VARCHAR(16) NOT NULL,"
+                    + "created BIGINT NOT NULL,"
+                    + "expires BIGINT NOT NULL DEFAULT 0,"
+                    + "active INT NOT NULL DEFAULT 1,"
+                    + "removed_by VARCHAR(16),"
+                    + "removed_at BIGINT NOT NULL DEFAULT 0"
+                    + (mysql ? ", INDEX idx_sc_pun_uuid (uuid, type), INDEX idx_sc_pun_ip (ip)" : "")
+                    + ")");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_player_ips ("
+                    + "uuid VARCHAR(36) NOT NULL,"
+                    + "ip VARCHAR(64) NOT NULL,"
+                    + "name VARCHAR(16) NOT NULL,"
+                    + "last_seen BIGINT NOT NULL,"
+                    + "PRIMARY KEY (uuid, ip)"
+                    + (mysql ? ", INDEX idx_sc_ips_ip (ip)" : "")
+                    + ")");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_rules ("
+                    + "uuid VARCHAR(36) NOT NULL PRIMARY KEY,"
+                    + "version INT NOT NULL,"
+                    + "accepted_at BIGINT NOT NULL)");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_crate_keys ("
+                    + "uuid VARCHAR(36) NOT NULL,"
+                    + "crate VARCHAR(32) NOT NULL,"
+                    + "amount INT NOT NULL DEFAULT 0,"
+                    + "PRIMARY KEY (uuid, crate))");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_crate_blocks ("
+                    + "location VARCHAR(128) NOT NULL PRIMARY KEY,"
+                    + "crate VARCHAR(32) NOT NULL)");
             if (!mysql) {
+                st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_pun_uuid ON sc_punishments (uuid, type)");
+                st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_pun_ip ON sc_punishments (ip)");
+                st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_ips_ip ON sc_player_ips (ip)");
                 st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_votes_name ON sc_votes (name_lower)");
                 st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_votes_created ON sc_votes (created)");
                 st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_tx_player ON sc_transactions (player, created)");
