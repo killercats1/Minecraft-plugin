@@ -94,13 +94,7 @@ permissions:
       servercore.headfix.give: true
       servercore.lagguard: true
       servercore.lagguard.notify: true
-      servercore.vote:
-    description: Use /vote and /vote top.
-    default: true
-  servercore.vote.admin:
-    description: Use /vote test <player> to simulate a vote.
-    default: op
-  servercore.chatguard.bypass: true
+      servercore.chatguard.bypass: true
       servercore.chatguard.notify: true
       servercore.vote.admin: true
   servercore.player:
@@ -131,6 +125,12 @@ permissions:
       servercore.transactions: true
       servercore.announcer.receive: true
       servercore.vote: true
+  servercore.vote:
+    description: Use /vote and /vote top.
+    default: true
+  servercore.vote.admin:
+    description: Use /vote test <player> to simulate a vote.
+    default: op
   servercore.admin:
     description: Reload the plugin.
     default: op
