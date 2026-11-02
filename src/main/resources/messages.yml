@@ -29,6 +29,7 @@ general:
     - '&e/worth [item] &7- Check item prices'
     - '&e/ah &7- Auction house'
     - '&e/daily &7- Daily reward'
+    - '&e/vote &7- Vote for rewards'
     - '&e/bounty &7- Bounties'
     - '&e/lottery &7- Lottery'
     - '&e/transactions &7- Your money history'
@@ -299,6 +300,21 @@ linkreward:
   disabled: '&cThe Discord link reward is disabled in config.yml.'
   bad-uuid: '&c''{input}'' is not a valid UUID. Use %minecraftuuid% in DiscordSRV.'
   bad-discord-id: '&c''{input}'' is not a valid Discord id. Use %discordid% in DiscordSRV.'
+
+vote:
+  header: '&8&m----------&r &b&lVOTE &8&m----------'
+  link: '&7Vote on &b{name}&7: &f&n{url}'
+  link-hover: '&eClick to open the vote page'
+  no-links: '&7No vote links are set up yet.'
+  footer: '&7Each vote gives you a reward. You have voted &b{votes} &7time(s). &8(/vote top)'
+  received: '&b&lTHANKS FOR VOTING! &7You voted on &f{service} &7and got &a{amount}&7!'
+  received-no-money: '&b&lTHANKS FOR VOTING! &7You voted on &f{service} &7and got your reward!'
+  broadcast: '&b{player} &7voted for the server and got a reward! Vote with &f/vote'
+  reminder: '&7You haven''t voted today. Type &b/vote &7for free rewards!'
+  top-header: '&8&m----------&r &b&lTOP VOTERS THIS MONTH &8&m----------'
+  top-line: '&7#{rank} &f{player} &8- &b{votes} &7vote(s)'
+  test: '&eSimulating a vote for {player} (Votifier: {votifier}).'
+  disabled: '&cVoting is disabled in config.yml.'
 
 chatguard:
   slow-down: '&cSlow down! You are sending messages too fast.'

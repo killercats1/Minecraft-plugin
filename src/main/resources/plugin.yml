@@ -4,7 +4,7 @@ main: com.killercats.servercore.ServerCore
 description: ${project.description}
 author: killercats1
 website: https://github.com/killercats1/Minecraft-plugin
-softdepend: [Vault, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions]
+softdepend: [Votifier, NuVotifier, Vault, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions]
 
 commands:
   servercore:
@@ -61,6 +61,9 @@ commands:
   headfix:
     description: Player head fix for Eaglercraft (status, check, fix, give).
     aliases: [hf, skullfix]
+  vote:
+    description: Vote for the server and get rewards (top, test).
+    aliases: [votes]
   lagguard:
     description: Lag protection (TPS, ground item clearing, busiest chunks).
     aliases: [lguard]
@@ -91,8 +94,15 @@ permissions:
       servercore.headfix.give: true
       servercore.lagguard: true
       servercore.lagguard.notify: true
-      servercore.chatguard.bypass: true
+      servercore.vote:
+    description: Use /vote and /vote top.
+    default: true
+  servercore.vote.admin:
+    description: Use /vote test <player> to simulate a vote.
+    default: op
+  servercore.chatguard.bypass: true
       servercore.chatguard.notify: true
+      servercore.vote.admin: true
   servercore.player:
     description: All normal player features.
     default: true
@@ -120,6 +130,7 @@ permissions:
       servercore.auction.sell: true
       servercore.transactions: true
       servercore.announcer.receive: true
+      servercore.vote: true
   servercore.admin:
     description: Reload the plugin.
     default: op

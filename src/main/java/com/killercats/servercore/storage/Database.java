@@ -145,7 +145,18 @@ public final class Database {
                     + "discord_id VARCHAR(32) NOT NULL UNIQUE,"
                     + "name VARCHAR(16),"
                     + "rewarded_at BIGINT NOT NULL)");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS sc_votes ("
+                    + "id " + autoId + ","
+                    + "name_lower VARCHAR(16) NOT NULL,"
+                    + "name VARCHAR(16) NOT NULL,"
+                    + "service VARCHAR(64) NOT NULL,"
+                    + "created BIGINT NOT NULL,"
+                    + "delivered INT NOT NULL DEFAULT 0"
+                    + (mysql ? ", INDEX idx_sc_votes_name (name_lower), INDEX idx_sc_votes_created (created)" : "")
+                    + ")");
             if (!mysql) {
+                st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_votes_name ON sc_votes (name_lower)");
+                st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_votes_created ON sc_votes (created)");
                 st.executeUpdate("CREATE INDEX IF NOT EXISTS idx_sc_tx_player ON sc_transactions (player, created)");
             }
         }

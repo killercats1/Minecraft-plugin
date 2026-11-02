@@ -98,6 +98,19 @@ Players who link their Discord account with DiscordSRV (`/discord link`) get a o
 
 Each Minecraft account **and** each Discord account can only get the reward once, so unlinking and relinking, or linking alts to the same Discord, gives nothing. The reward shows up in `/transactions`.
 
+## Vote rewards (`/vote`)
+
+Players vote on server lists (TopEaglerServers is set up already) and get $250 per vote by default. `/vote` shows the clickable vote links and the player's vote count, and `/vote top` shows this month's top voters. Votes for offline players are saved and paid when they next join.
+
+Vote sites tell the server about a vote through **NuVotifier**, so it has to be installed next to ServerCore:
+
+1. Put [NuVotifier](https://github.com/NuVotifier/NuVotifier/releases) (the Bukkit/Spigot jar) in `plugins/` and restart once.
+2. Open the Votifier port in your host's firewall/panel. It is `port` in `plugins/Votifier/config.yml` (8192 by default). On a shared host (eagler.host and similar) ask them for an extra port and put it there.
+3. On the vote site's server settings, enter your server's IP, that Votifier port and the public key from `plugins/Votifier/rsa/public.key` (one long line, no header). Use the site's Votifier test button to check it.
+4. Run `/vote test <player>` in game to check the rewards without voting.
+
+Change the money, add console commands (`{player}`, `{uuid}`, `{service}`), add more vote links or turn off the broadcast/join reminder under `votes` in `config.yml`. Vote money shows up in `/transactions`.
+
 ## Player heads on Eaglercraft (`/headfix`)
 
 **The problem:** an Eaglercraft (browser) client only draws a player head's skin if the head stores a player UUID. On an offline-mode server, Spigot fills in a head made from a name (`/skull <name>`, menus, HeadDB's player heads) by asking Mojang. For cracked names that fails, so the head has no UUID and shows Steve. Sometimes it finds a premium account with the same name and shows a stranger's skin.
