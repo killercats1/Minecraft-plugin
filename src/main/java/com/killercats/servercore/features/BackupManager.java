@@ -1,6 +1,7 @@
 package com.killercats.servercore.features;
 
 import com.killercats.servercore.ServerCore;
+import com.killercats.servercore.util.DiscordWebhook;
 import com.killercats.servercore.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -187,10 +188,72 @@ public final class BackupManager {
             } else {
                 running = false;
             }
+            // Worlds are saving again by now; the upload can take a while and needs no pause.
+            if (failure == null) {
+                uploadOffsite(target);
+            }
         }, "ServerCore-Backup");
         thread.setDaemon(true);
         thread.setPriority(Thread.MIN_PRIORITY);
         thread.start();
+    }
+
+    /**
+     * Sends a finished backup to a Discord channel through a webhook, so a host failure can't take
+     * the only copies with it. Discord limits file size, so the zip is split into numbered parts
+     * (backup.zip.001, .002, ...) that 7-Zip or "cat" joins back together. Runs on the backup thread.
+     */
+    private void uploadOffsite(File zip) {
+        String url = plugin.getConfig().getString("backups.discord.webhook-url", "");
+        if (url == null || url.trim().isEmpty()) {
+            return;
+        }
+        url = url.trim();
+        if (!DiscordWebhook.isValidUrl(url)) {
+            plugin.getLogger().warning("backups.discord.webhook-url is not a Discord webhook URL; off-site backup skipped.");
+            return;
+        }
+        long size = zip.length();
+        long sizeMb = size / 1024 / 1024;
+        long maxMb = plugin.getConfig().getLong("backups.discord.max-upload-mb", 250);
+        String server = plugin.getConfig().getString("backups.discord.server-name", "LilMonkeySMP");
+        try {
+            if (sizeMb > maxMb) {
+                DiscordWebhook.send(url, ":warning: **" + server + "** backup `" + zip.getName() + "` is " + sizeMb
+                        + " MB, over the " + maxMb + " MB upload limit (backups.discord.max-upload-mb). It is only on the server's disk.");
+                notifyStaffLater("backup.upload-too-big", "size", sizeMb, "max", maxMb);
+                return;
+            }
+            double partMb = Math.max(1, Math.min(24, plugin.getConfig().getDouble("backups.discord.part-size-mb", 9)));
+            int partSize = (int) (partMb * 1024 * 1024);
+            int parts = (int) Math.max(1, (size + partSize - 1) / partSize);
+            plugin.getLogger().info("Uploading backup to Discord in " + parts + " part(s)...");
+            for (int i = 0; i < parts; i++) {
+                long offset = (long) i * partSize;
+                int length = (int) Math.min(partSize, size - offset);
+                String name = parts == 1 ? zip.getName() : zip.getName() + String.format(Locale.US, ".%03d", i + 1);
+                String text = parts == 1
+                        ? ":floppy_disk: **" + server + "** backup `" + zip.getName() + "` (" + sizeMb + " MB)"
+                        : ":floppy_disk: **" + server + "** backup `" + zip.getName() + "` part " + (i + 1) + "/" + parts
+                        + (i == 0 ? " (" + sizeMb + " MB total). Download every part into one folder and open the .001 file with 7-Zip to restore." : "");
+                DiscordWebhook.sendFilePart(url, text, zip, offset, length, name);
+                if (i + 1 < parts) {
+                    Thread.sleep(1500);
+                }
+            }
+            plugin.getLogger().info("Backup uploaded to Discord.");
+            notifyStaffLater("backup.upload-finished", "parts", parts);
+        } catch (Exception e) {
+            String error = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+            plugin.getLogger().log(Level.WARNING, "Off-site backup upload failed", e);
+            notifyStaffLater("backup.upload-failed", "error", error);
+        }
+    }
+
+    private void notifyStaffLater(String key, Object... placeholders) {
+        if (plugin.isEnabled()) {
+            Bukkit.getScheduler().runTask(plugin, () -> broadcastStaff(key, placeholders));
+        }
     }
 
     private void pruneOld(File dir) {

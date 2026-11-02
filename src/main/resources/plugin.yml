@@ -4,7 +4,7 @@ main: com.killercats.servercore.ServerCore
 description: ${project.description}
 author: killercats1
 website: https://github.com/killercats1/Minecraft-plugin
-softdepend: [Votifier, NuVotifier, Vault, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions]
+softdepend: [Votifier, NuVotifier, Vault, LoginSecurity, AuthMe, GriefPrevention, CoreProtect, NoCheatPlus, Essentials, PlaceholderAPI, LuckPerms, PermissionsEx, GroupManager, zPermissions, bPermissions]
 
 commands:
   servercore:
@@ -67,6 +67,29 @@ commands:
   lagguard:
     description: Lag protection (TPS, ground item clearing, busiest chunks).
     aliases: [lguard]
+  punish:
+    description: Punish a player (menu with preset reasons, or warn/kick/mute/tempban/ban).
+    aliases: [punishment]
+  warn:
+    description: Warn a player.
+  unpunish:
+    description: Lift a ban or mute.
+    aliases: [unpunishment]
+  phistory:
+    description: A player's punishment history.
+    aliases: [punishments, phist]
+  alts:
+    description: Accounts that joined from the same IP.
+    aliases: [dupeip]
+  rules:
+    description: Show the server rules (and accept them).
+    aliases: [serverrules]
+  crate:
+    description: Crates and keys.
+    aliases: [crates, keys]
+  store:
+    description: Link to the server store.
+    aliases: [buy, donate]
 
 permissions:
   servercore.*:
@@ -97,6 +120,18 @@ permissions:
       servercore.chatguard.bypass: true
       servercore.chatguard.notify: true
       servercore.vote.admin: true
+      servercore.staff: true
+      servercore.punish: true
+      servercore.punish.mute: true
+      servercore.punish.tempban: true
+      servercore.punish.ban: true
+      servercore.punish.unban: true
+      servercore.punish.unmute: true
+      servercore.punish.history: true
+      servercore.punish.alts: true
+      servercore.punish.notify: true
+      servercore.spawnprotection.bypass: true
+      servercore.crate.admin: true
   servercore.player:
     description: All normal player features.
     default: true
@@ -125,11 +160,60 @@ permissions:
       servercore.transactions: true
       servercore.announcer.receive: true
       servercore.vote: true
+      servercore.crate: true
   servercore.vote:
     description: Use /vote and /vote top.
     default: true
   servercore.vote.admin:
     description: Use /vote test <player> to simulate a vote.
+    default: op
+  servercore.staff:
+    description: Marks a staff account. Staff accounts are locked if no login plugin is running.
+    default: op
+  servercore.punish:
+    description: Use /punish (menu, warnings, kicks) and /warn.
+    default: op
+  servercore.punish.mute:
+    description: Mute players.
+    default: op
+  servercore.punish.tempban:
+    description: Temporarily ban players.
+    default: op
+  servercore.punish.ban:
+    description: Permanently ban players.
+    default: op
+  servercore.punish.unban:
+    description: Lift bans with /unpunish.
+    default: op
+  servercore.punish.unmute:
+    description: Lift mutes with /unpunish.
+    default: op
+  servercore.punish.history:
+    description: See punishment history with /phistory.
+    default: op
+  servercore.punish.alts:
+    description: See alt accounts with /alts.
+    default: op
+  servercore.punish.notify:
+    description: See punishments and ban-evasion alerts.
+    default: op
+  servercore.punish.exempt:
+    description: Cannot be punished by other players (console still can).
+    default: false
+  servercore.spawnprotection.bypass:
+    description: Build and break inside spawn protection.
+    default: op
+  servercore.rules.exempt:
+    description: Never asked to accept the rules.
+    default: false
+  servercore.combattag.bypass:
+    description: Never combat tagged.
+    default: false
+  servercore.crate:
+    description: Open crates with keys.
+    default: true
+  servercore.crate.admin:
+    description: Give/take keys and place crate blocks.
     default: op
   servercore.admin:
     description: Reload the plugin.

@@ -257,8 +257,8 @@ votes:
   # Money per vote (needs Vault + an economy). 0 = none.
   money: 250
   # Extra console commands per vote. Placeholders: {player} {uuid} {service}
-  # Example: 'give {player} diamond 1'
-  commands: []
+  # Example: 'give {player} diamond 1'. The default gives a Vote Crate key (/crate).
+  commands: ['crate givekey {player} vote 1']
   # Tell everyone online when someone votes.
   broadcast: true
   # Save votes for offline players and reward them when they join. false = offline votes give nothing.
@@ -275,7 +275,7 @@ scoreboard:
   title: '&6&lLILMONKEY SMP'
   disabled-worlds: []
   # Placeholders: {player} {rank} {balance} {bank} {bounty} {lottery} {streak}
-  # {online} {max} {world} {maintenance} {client} {tps} and any PlaceholderAPI %placeholder%.
+  # {online} {max} {world} {maintenance} {client} {tps} {combat} and any PlaceholderAPI %placeholder%.
   # Max 15 lines, each line max 32 visible characters.
   lines:
     - '&7&m----------------'
@@ -438,7 +438,251 @@ backups:
   # Folder in the main server directory.
   folder: backups
   # Plugin folders to include (jar files are always skipped).
-  include-plugins: [ServerCore, LuckPerms, Essentials, DiscordSRV, LoginSecurity, Jobs, DecentHolograms, VillagerMarket, MineResetLite]
+  include-plugins: [ServerCore, LuckPerms, Essentials, DiscordSRV, LoginSecurity, Jobs, DecentHolograms, VillagerMarket, MineResetLite,
+    GriefPreventionData, NoCheatPlus, Votifier]
+  # Off-site copy: every finished backup is also uploaded to a Discord channel, so a host failure
+  # can't take your only backups. In Discord: channel settings > Integrations > Webhooks > New Webhook
+  # > Copy Webhook URL, and paste it here. Use a private channel only staff can see!
+  # Big backups are split into parts (.zip.001, .zip.002, ...): download every part into one folder
+  # and open the .001 file with 7-Zip to restore.
+  discord:
+    webhook-url: ''
+    # Discord allows 10 MB per file on servers without boosts. Raise it if your server is boosted.
+    part-size-mb: 9
+    # Backups bigger than this are not uploaded (Discord gets a notice instead).
+    max-upload-mb: 250
+    server-name: 'LilMonkeySMP'
+
+# ---------------------------------------------------------------------
+# Security
+# ---------------------------------------------------------------------
+security:
+  # Eaglercraft servers run in offline mode, so without a login plugin anyone can join with your name.
+  # ServerCore looks for LoginSecurity, AuthMe, nLogin, JPremium and other login plugins.
+  #   protect = if no login plugin is running, ops and staff (servercore.staff or maintenance bypass)
+  #             can't join until one is installed. Players are not affected.
+  #   warn    = staff can join but get a warning.
+  #   off     = no check.
+  login-check:
+    mode: protect
+    # Set to true if players log in on the proxy (e.g. EaglerXServer auth on BungeeCord/Velocity).
+    auth-on-proxy: false
+    # Other login plugins to accept (their plugin names).
+    extra-login-plugins: []
+
+# Warnings, kicks, mutes and bans with history (/punish, /warn, /unpunish, /phistory, /alts).
+punishments:
+  enabled: true
+  # Accounts that join from the same IP as a banned account (ban evasion):
+  #   alert = staff are told, block = they can't join, off = nothing.
+  # Players behind a proxy without IP forwarding all share one address; ServerCore ignores those.
+  ban-evasion: alert
+  # Tell everyone (not just staff) when someone is banned or kicked.
+  broadcast-bans: true
+  # Shown on the ban screen. For example your Discord invite.
+  appeal: 'Appeal on our Discord'
+  # Log every punishment to a Discord channel (webhook URL, see backups.discord). Empty = off.
+  discord-webhook-url: ''
+  # Commands a muted player can't use.
+  muted-blocked-commands: [msg, tell, w, whisper, m, t, pm, r, reply, mail, me, say, helpop, ac, sc]
+  # Buttons in /punish <player>. Each offence of the same kind moves one step down its list
+  # (the last step repeats). Steps: warn, kick, mute <time>, mute, tempban <time>, ban.
+  # Times: 30m, 2h, 7d, 4w. "mute" or "ban" without a time is permanent.
+  presets:
+    hacking:
+      name: '&cHacking / cheat client'
+      icon: DIAMOND_SWORD
+      reason: 'Hacking'
+      steps: ['tempban 7d', 'tempban 30d', 'ban']
+    xray:
+      name: '&bX-ray'
+      icon: DIAMOND_ORE
+      reason: 'X-ray'
+      steps: ['tempban 3d', 'tempban 14d', 'ban']
+    griefing:
+      name: '&6Griefing / stealing'
+      icon: TNT
+      reason: 'Griefing'
+      steps: ['tempban 3d', 'tempban 14d', 'ban']
+    spam:
+      name: '&eSpam'
+      icon: PAPER
+      reason: 'Spamming'
+      steps: ['warn', 'mute 30m', 'mute 2h', 'mute 1d']
+    toxicity:
+      name: '&dToxic / rude'
+      icon: ROTTEN_FLESH
+      reason: 'Disrespect'
+      steps: ['warn', 'mute 1h', 'mute 1d', 'tempban 3d']
+    advertising:
+      name: '&9Advertising'
+      icon: SIGN
+      reason: 'Advertising'
+      steps: ['mute 1d', 'tempban 7d', 'ban']
+    inappropriate:
+      name: '&7Bad name / skin / build'
+      icon: NAME_TAG
+      reason: 'Inappropriate content'
+      steps: ['warn', 'kick', 'tempban 1d']
+    evasion:
+      name: '&4Ban evasion'
+      icon: BARRIER
+      reason: 'Ban evasion'
+      steps: ['ban']
+
+# ---------------------------------------------------------------------
+# Spawn, rules and PvP
+# ---------------------------------------------------------------------
+# No building, breaking, fire, explosions or PvP around spawn (no WorldGuard needed).
+# The centre is the world spawn; stand somewhere and run /servercore setspawnprotection to move it.
+# Builders and admins (servercore.spawnprotection.bypass) can still build.
+spawn-protection:
+  enabled: true
+  # Empty = the main world.
+  world: ''
+  # Square radius in blocks around the centre.
+  radius: 48
+  block-pvp: true
+  # No damage at all at spawn (falling, mobs, lava...). The void still kills.
+  block-all-damage: true
+  # Players can't hurt animals, item frames or armor stands at spawn.
+  protect-animals: true
+  # Also lock chests/furnaces/hoppers at spawn (for shops or display chests).
+  block-containers: false
+
+# New players see the rules and must accept them (click or /rules accept) before they can move,
+# chat or use commands. Raise "version" after changing the rules to make everyone accept again.
+rules:
+  require-accept: true
+  version: 1
+  remind-seconds: 15
+  # Commands allowed before accepting (login plugins need theirs).
+  allowed-commands: [login, l, log, register, reg, changepassword, changepw, captcha, rules, help, discord, link, audio]
+  lines:
+    - 'Be respectful. No harassment, hate speech or bullying.'
+    - 'No hacking, cheat clients, x-ray or exploiting bugs.'
+    - 'No griefing or stealing. Claim your land with a golden shovel.'
+    - 'No spamming or advertising other servers.'
+    - 'No inappropriate names, skins or builds.'
+    - 'Don''t log out during a fight - you will die and drop your items.'
+    - 'Listen to staff. Report problems with /helpop.'
+
+# Combat-log protection.
+combat-tag:
+  enabled: true
+  # How long a player stays in combat after the last hit.
+  seconds: 15
+  # Logging out while in combat kills the player so their items drop.
+  kill-on-logout: true
+  # Stop flying when tagged, and block /fly.
+  disable-flight: true
+  # Commands blocked while in combat. Use '*' to block all commands.
+  blocked-commands: [spawn, home, homes, tpa, tpahere, tpaccept, tpyes, tp, tphere, warp, warps, back, fly, gamemode, gm, gmc, gms,
+    enderchest, ec, echest, heal, feed, hat, workbench, wb, rtp, wild, afk, vanish, v, sethome, kit, kits, trade, ah, auction, auctionhouse]
+
+# ---------------------------------------------------------------------
+# Crates and keys (/crate)
+# ---------------------------------------------------------------------
+# Keys are virtual (stored in the database), so they can't be duplicated or faked.
+# Give keys from votes, the store or the console:   crate givekey <player|all> <crate> [amount]
+# Put a crate in the world: look at a chest and run /crate set <crate>. Right-click it to open,
+# left-click to see the rewards.
+# Rewards: "weight" is the relative chance. Each reward can give its item (give-item: true), money,
+# and run console commands ({player} {uuid} {crate}). broadcast: true announces it to everyone.
+# Item: material (1.8 names), amount, data, name, lore, enchants (1.8 names like DAMAGE_ALL: 3).
+crates:
+  enabled: true
+  animation: true
+  types:
+    vote:
+      name: '&b&lVote Crate'
+      icon: CHEST
+      rewards:
+        money_small:
+          weight: 35
+          item: {material: GOLD_NUGGET, name: '&6$150'}
+          money: 150
+        money_big:
+          weight: 15
+          item: {material: GOLD_INGOT, name: '&6$500'}
+          money: 500
+        iron:
+          weight: 20
+          item: {material: IRON_INGOT, amount: 16}
+          give-item: true
+        food:
+          weight: 15
+          item: {material: COOKED_BEEF, amount: 32}
+          give-item: true
+        diamonds:
+          weight: 10
+          item: {material: DIAMOND, amount: 3}
+          give-item: true
+        rare_key:
+          weight: 5
+          item: {material: TRIPWIRE_HOOK, name: '&5Rare Crate Key'}
+          commands: ['crate givekey {player} rare 1']
+          broadcast: true
+    rare:
+      name: '&5&lRare Crate'
+      icon: ENDER_CHEST
+      rewards:
+        money:
+          weight: 30
+          item: {material: GOLD_BLOCK, name: '&6$1,500'}
+          money: 1500
+        diamonds:
+          weight: 25
+          item: {material: DIAMOND, amount: 8}
+          give-item: true
+        sword:
+          weight: 15
+          item: {material: DIAMOND_SWORD, name: '&5Rare Blade', enchants: {DAMAGE_ALL: 3, DURABILITY: 3}}
+          give-item: true
+        pick:
+          weight: 15
+          item: {material: DIAMOND_PICKAXE, name: '&5Rare Pickaxe', enchants: {DIG_SPEED: 4, DURABILITY: 3, LOOT_BONUS_BLOCKS: 2}}
+          give-item: true
+        gapples:
+          weight: 10
+          item: {material: GOLDEN_APPLE, amount: 4}
+          give-item: true
+        god_apple:
+          weight: 5
+          item: {material: GOLDEN_APPLE, data: 1, amount: 1}
+          give-item: true
+          broadcast: true
+    legendary:
+      name: '&6&lLegendary Crate'
+      icon: ENDER_CHEST
+      rewards:
+        money:
+          weight: 30
+          item: {material: GOLD_BLOCK, amount: 5, name: '&6$5,000'}
+          money: 5000
+        armor:
+          weight: 20
+          item: {material: DIAMOND_CHESTPLATE, name: '&6Legendary Chestplate', enchants: {PROTECTION_ENVIRONMENTAL: 4, DURABILITY: 3}}
+          give-item: true
+          broadcast: true
+        sword:
+          weight: 20
+          item: {material: DIAMOND_SWORD, name: '&6Legendary Blade', enchants: {DAMAGE_ALL: 5, FIRE_ASPECT: 2, DURABILITY: 3}}
+          give-item: true
+          broadcast: true
+        god_apples:
+          weight: 15
+          item: {material: GOLDEN_APPLE, data: 1, amount: 3}
+          give-item: true
+          broadcast: true
+        rare_keys:
+          weight: 15
+          item: {material: TRIPWIRE_HOOK, amount: 3, name: '&53x Rare Crate Key'}
+          commands: ['crate givekey {player} rare 3']
+
+# /store link (Tebex). Leave empty until your store is set up.
+store:
+  url: ''
 
 staffchat:
   format: '&8[&cStaff&8] &e{player}&8: &f{message}'

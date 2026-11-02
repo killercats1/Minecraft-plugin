@@ -136,6 +136,10 @@ public final class ScoreboardManager implements Listener {
                 .replace("{world}", player.getWorld().getName())
                 .replace("{streak}", String.valueOf(data.getDailyStreak()))
                 .replace("{maintenance}", plugin.maintenance().isEnabled() ? "&cON" : "&aOFF");
+        if (out.contains("{combat}")) {
+            int left = plugin.combat() == null ? 0 : plugin.combat().secondsLeft(player);
+            out = out.replace("{combat}", left > 0 ? left + "s" : "-");
+        }
         if (out.contains("{client}")) {
             out = out.replace("{client}", plugin.heads() == null ? "?" : plugin.heads().clientOf(player).display());
         }

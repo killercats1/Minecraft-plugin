@@ -214,6 +214,36 @@ lp group admin permission set channels.adminchat true
 lp group admin permission set servercore.backup true
 lp group admin permission set servercore.lagguard true
 lp group admin permission set servercore.headfix.give true
+lp group builder permission set servercore.spawnprotection.bypass true
+lp group helper permission set servercore.staff true
+lp group helper permission set servercore.punish true
+lp group helper permission set servercore.punish.mute true
+lp group helper permission set servercore.punish.history true
+lp group helper permission set servercore.punish.notify true
+lp group helper permission set coreprotect.inspect true
+lp group helper permission set coreprotect.lookup true
+lp group helper permission set nocheatplus.notify true
+lp group helper permission set nocheatplus.command.notify true
+lp group moderator permission set servercore.punish.tempban true
+lp group moderator permission set servercore.punish.unmute true
+lp group moderator permission set servercore.punish.alts true
+lp group moderator permission set coreprotect.rollback true
+lp group moderator permission set coreprotect.restore true
+lp group moderator permission set coreprotect.teleport true
+lp group moderator permission set griefprevention.ignoreclaims true
+lp group moderator permission set griefprevention.deleteclaims true
+lp group moderator permission set griefprevention.claimslistother true
+lp group moderator permission set nocheatplus.command.info true
+lp group moderator permission set nocheatplus.command.inspect true
+lp group admin permission set servercore.punish.ban true
+lp group admin permission set servercore.punish.unban true
+lp group admin permission set servercore.crate.admin true
+lp group admin permission set servercore.spawnprotection.bypass true
+lp group admin permission set coreprotect.* true
+lp group admin permission set griefprevention.adminclaims true
+lp group admin permission set griefprevention.adjustclaimblocks true
+lp group admin permission set griefprevention.transferclaim true
+lp group admin permission set nocheatplus.command.* true
 lp group developer setweight 90
 lp group developer setdisplayname Developer
 lp group developer meta setprefix 90 "&3[Dev] &f"

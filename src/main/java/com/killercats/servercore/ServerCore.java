@@ -47,6 +47,15 @@ import com.killercats.servercore.maintenance.MaintenanceCommand;
 import com.killercats.servercore.maintenance.MaintenanceListener;
 import com.killercats.servercore.maintenance.MaintenanceManager;
 import com.killercats.servercore.storage.Database;
+import com.killercats.servercore.combat.CombatTag;
+import com.killercats.servercore.command.StoreCommand;
+import com.killercats.servercore.crates.CrateCommand;
+import com.killercats.servercore.crates.CrateManager;
+import com.killercats.servercore.protect.SpawnProtection;
+import com.killercats.servercore.punish.PunishCommands;
+import com.killercats.servercore.punish.PunishmentManager;
+import com.killercats.servercore.rules.RulesManager;
+import com.killercats.servercore.security.SecurityCheck;
 import com.killercats.servercore.vote.VoteCommand;
 import com.killercats.servercore.vote.VoteManager;
 import com.killercats.servercore.vote.VotifierHook;
@@ -80,6 +89,12 @@ public final class ServerCore extends JavaPlugin {
     private HeadFixManager heads;
     private LagGuard lagGuard;
     private VoteManager votes;
+    private SecurityCheck security;
+    private PunishmentManager punishments;
+    private SpawnProtection spawnProtection;
+    private RulesManager rules;
+    private CombatTag combat;
+    private CrateManager crates;
 
     private EconomyService economy;
     private TransactionLogger transactions;
@@ -151,6 +166,24 @@ public final class ServerCore extends JavaPlugin {
             getLogger().warning("Votifier/NuVotifier not found: /vote shows the links but votes can't be received. Install NuVotifier.");
         }
         command("vote", new VoteCommand(this, votes, votifier));
+
+        security = new SecurityCheck(this);
+        punishments = new PunishmentManager(this);
+        spawnProtection = new SpawnProtection(this);
+        rules = new RulesManager(this);
+        combat = new CombatTag(this);
+        crates = new CrateManager(this);
+        register(security, punishments, spawnProtection, rules, combat, crates);
+        command("punish", new PunishCommands.Punish(this));
+        command("warn", new PunishCommands.Warn(this));
+        command("unpunish", new PunishCommands.Unpunish(this));
+        command("phistory", new PunishCommands.History(this));
+        command("alts", new PunishCommands.Alts(this));
+        command("rules", new RulesManager.RulesCommand(this));
+        command("crate", new CrateCommand(this));
+        command("store", new StoreCommand(this));
+        // Every plugin has loaded by the first tick, so the login/plugin check sees them all.
+        Bukkit.getScheduler().runTask(this, security::logStartupReport);
 
         if (!setupEconomy()) {
             // Some economy plugins register with Vault late; retry once the server has finished starting.
@@ -230,6 +263,12 @@ public final class ServerCore extends JavaPlugin {
         if (lagGuard != null) {
             lagGuard.shutdown();
         }
+        if (rules != null) {
+            rules.shutdown();
+        }
+        if (combat != null) {
+            combat.shutdown();
+        }
         if (maintenance != null) {
             maintenance.shutdown();
         }
@@ -281,6 +320,10 @@ public final class ServerCore extends JavaPlugin {
         backups.reload();
         heads.start();
         lagGuard.reload();
+        punishments.reload();
+        rules.reload();
+        combat.reload();
+        crates.reload();
         if (economy != null) {
             transactions.reload();
             bank.reload();
@@ -364,6 +407,30 @@ public final class ServerCore extends JavaPlugin {
 
     public VoteManager votes() {
         return votes;
+    }
+
+    public SecurityCheck security() {
+        return security;
+    }
+
+    public PunishmentManager punishments() {
+        return punishments;
+    }
+
+    public SpawnProtection spawnProtection() {
+        return spawnProtection;
+    }
+
+    public RulesManager rules() {
+        return rules;
+    }
+
+    public CombatTag combat() {
+        return combat;
+    }
+
+    public CrateManager crates() {
+        return crates;
     }
 
     public BackupManager backups() {
